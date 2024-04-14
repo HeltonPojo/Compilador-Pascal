@@ -33,6 +33,7 @@ then
 write
 read
 ;
+:
 ,
 .
 (

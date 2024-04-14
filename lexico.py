@@ -38,6 +38,7 @@ def parser(arquivo, lista_tokens):
                 if '"' == palavra or "'" == palavra and aspas_abertas:
                     string_lex += palavra
                     aspas_abertas = False
+                    #Salvando String
                     tokens_encontrados.append((44, string_lex, linha_atual, coluna_atual))
                     string_lex = ''
                 elif '"' in palavra or "'" in palavra or aspas_abertas:
@@ -50,23 +51,24 @@ def parser(arquivo, lista_tokens):
                 if is_token:
                     tokens_encontrados.append((token_linha, palavra, linha_atual, coluna_atual))
                 else:
-                    tokens_encontrados.append((45, palavra, linha_atual, coluna_atual))
+                    #Salvando IDENT
+                    tokens_encontrados.append((46, palavra, linha_atual, coluna_atual))
                 coluna_atual += len(palavra)
     return tokens_encontrados
 
 
 
-def verificar_balanceamento_parentheses(arquivo):
-    abre_fecha = {'(': ')', '[': ']', '{': '}'}
-    pilha = []
-    for linha_num, linha in enumerate(arquivo, start=1):
-        for coluna_num, char in enumerate(linha, start=1):
-            if char in abre_fecha.keys():
-                pilha.append((char, linha_num, coluna_num))
-            elif char in abre_fecha.values():
-                if not pilha or abre_fecha[pilha.pop()[0]] != char:
-                    return False, (linha_num, coluna_num)
-    return not pilha, None
+#def verificar_balanceamento_parentheses(arquivo):
+#    abre_fecha = {'(': ')', '[': ']', '{': '}'}
+#    pilha = []
+#    for linha_num, linha in enumerate(arquivo, start=1):
+#        for coluna_num, char in enumerate(linha, start=1):
+#            if char in abre_fecha.keys():
+#                pilha.append((char, linha_num, coluna_num))
+#            elif char in abre_fecha.values():
+#                if not pilha or abre_fecha[pilha.pop()[0]] != char:
+#                    return False, (linha_num, coluna_num)
+#    return not pilha, None
 
 def main(nome_arquivo):
     nome_arquivo_tokens = 'tokens.txt'
@@ -84,4 +86,5 @@ def main(nome_arquivo):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         lista = main(sys.argv[1])
+        print(lista)
     
