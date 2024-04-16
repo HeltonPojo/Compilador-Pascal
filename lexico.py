@@ -44,6 +44,14 @@ def parser(arquivo, lista_tokens):
                 elif '"' in palavra or "'" in palavra or aspas_abertas:
                     string_lex += palavra
                     aspas_abertas = True
+        elif '=' or '<' or '>' or '<' or '>' or '<' or ':' in palavras:
+            operation_lex = ''
+            for i, palavra in enumerate(linha):
+                if palavra == '=' or '<' or '>' or '<' or '>' or '<' or ':':
+                    string_lex += palavra
+                else:
+                    tokens_encontrados.append(())
+            return
         else:
             for palavra in palavras:
                 coluna_atual = linha.find(palavra, coluna_atual)
