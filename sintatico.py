@@ -55,8 +55,8 @@ class AnalisadorSintatico:
         if lista_tupla[0] == token_esperado:
             return
         else:
-            print('ERRO NA LINHA(consome): ', lista_tupla)
-            print('TOKEN ESPERADO', token_esperado)
+            print('ERRO NA LINHA: ', lista_tupla)
+            print('TOKEN ESPERADO: ', token_esperado)
             sys.exit()
             return
 
@@ -126,7 +126,8 @@ class AnalisadorSintatico:
         elif(lista_tupla_prox[0] == self.tokensnome['string']):
             self.consome(self.tokensnome['string'])
         else:
-            print('ERRO NA LINHA: ', self.index)
+            print('ERRO NA LINHA: ', lista_tupla_prox)
+            print('TOKENS ESPERADOS: interger real string')
             sys.exit()
             return
         return
@@ -145,7 +146,7 @@ class AnalisadorSintatico:
     def stmtList(self):
         prox_index = self.index + 1
         lista_tupla_prox = lista[prox_index]
-        if(lista_tupla_prox[0] == self.tokensnome['interger']):
+        if(lista_tupla_prox[0] not in (self.tokensnome['interger'], self.tokensnome['for']), self.tokensnome['write'], self.tokensnome['read'], self.tokensnome['begin'], self.tokensnome['if'], self.tokensnome['IDENT'], self.tokensnome['while']):
             self.stmt()
             self.stmtList()
             return
@@ -168,7 +169,8 @@ class AnalisadorSintatico:
         elif(lista_tupla_prox[0] == self.tokensnome['begin']):
             self.bloco()
         else:
-            print('ERRO NA LINHA: ', self.index)
+            print('ERRO NA LINHA: ', lista_tupla_prox)
+            print('TOKENS ESPERADOS: begin if IDENT while read write for')
             sys.exit()
             return
         return
@@ -195,7 +197,8 @@ class AnalisadorSintatico:
         elif(lista_tupla_prox[0] == self.tokensnome['interger']):
             self.consome(self.tokensnome['interger'])
         else:
-            print('ERRO NA LINHA: ', self.index)
+            print('ERRO NA LINHA: ', lista_tupla_prox)
+            print('TOKENS ESPERADOS: IDENT interger')
             sys.exit()
             return    
         return
@@ -214,9 +217,22 @@ class AnalisadorSintatico:
         elif(lista_tupla_prox[0] == self.tokensnome['write']):
             self.consome(self.tokensnome['write'])
             self.consome(self.tokensnome['('])
-            self.out()
+            self.outList()
             self.consome(self.tokensnome[')'])
             self.consome(self.tokensnome[';'])
+        return
+
+    def outList(self):
+        self.out()
+        self.restoOut()
+        return
+
+    def restoOut(self):
+        prox_index = self.index + 1
+        lista_tupla_prox = lista[prox_index]
+        if(lista_tupla_prox[0] == self.tokensnome[',']):
+            self.consome(self.tokensnome[','])
+            self.outList()
         return
 
     def out(self):
@@ -231,7 +247,8 @@ class AnalisadorSintatico:
         elif(lista_tupla_prox[0] == self.tokensnome['real']):
             self.consome(self.tokensnome['real'])
         else:
-            print('ERRO NA LINHA: ', self.index)
+            print('ERRO NA LINHA: ', lista_tupla_prox)
+            print('TOKENS ESPERADOS: IDENT STR interger real')
             sys.exit()
             return
         return
