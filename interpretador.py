@@ -110,9 +110,13 @@ class Interpretador:
         self.ponteiro = self.labels[label] - 1
 
     def chamada_sistema(self, instrucao):
-        _, comando, valor, _ = instrucao
+        _, comando, valor, variavel = instrucao
         if comando == 'PRINT':
-            print(valor)
+            palavra = ''
+            if type(variavel) == type('a'):
+                print(self.variaveis.get(variavel, 'Variavel não atribuida'))
+            else:
+                print(valor)
         elif comando == 'SCAN':
             self.variaveis[valor] = input()
 
