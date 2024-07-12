@@ -101,13 +101,13 @@ class Interpretador:
     def condicional(self, instrucao):
         _, condicao, label1, label2 = instrucao
         if self.variaveis.get(condicao, False):
-            self.ponteiro = label1 - 2
+            self.ponteiro = self.labels[label1] - 1
         else:
-            self.ponteiro = label2 - 2
+            self.ponteiro = self.labels[label2] - 1
 
     def jump(self, instrucao):
         _, label, _, _ = instrucao
-        self.ponteiro = label - 1
+        self.ponteiro = self.labels[label] - 1
 
     def chamada_sistema(self, instrucao):
         _, comando, valor, _ = instrucao

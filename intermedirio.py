@@ -15,10 +15,13 @@ def programa():
          ("+", "media", "media", "nota3"),
          ("/", "media", "media", 3),
          (">=", "media", "media", 6),
-         ("IF", "media", 9, 11),
+         ("IF", "media", "Aprovado", "Reprovado"),
+         ("LABEL", "Aprovado", None, None),
          ("CALL", "PRINT", "Aprovado", None),
-         ("JUMP", 12, None, None),
-         ("CALL", "PRINT", "Reprovado", None)
+         ("JUMP", "Fim", None, None),
+         ("LABEL", "Reprovado", None, None),
+         ("CALL", "PRINT", "Reprovado", None),
+         ("LABEL", "Fim", None, None)
          ]
 
     interpretador = Interpretador()
