@@ -13,12 +13,4 @@ begin
     write('Digite 1 para soma, 2 para subtracao.\n');
     read(op3);
     
-    if op3=1 then
-    begin
-        write('a soma eh',op1+op2);
-    end;
-    if op3=2 then
-    begin
-        write('a sub eh',op1-op2);
-    end;
 end.

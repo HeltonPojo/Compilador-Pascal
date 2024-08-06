@@ -1,0 +1,7 @@
+tem que pegar o analisador lexico e construir o código intermediario
+- para casos de if temos que definir uma label e fazer uma expressão para testar a validade vai ser uma label de entrar no fi e uma de sair
+- para casos de for e while construir 2 labels uma que sai e uma que continua na operação e testar a validade pra verificar se ela pode sair
+- para atribuir variaveis temos que registrar qual seu tipo para saber se é lógico ou não 
+- para print e para scan é tranquilo seguir o mesmo esquema
+
+criar geração de label para ter controle de onde essas loops vão retornar

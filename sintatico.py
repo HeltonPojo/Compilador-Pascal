@@ -48,6 +48,7 @@ class AnalisadorSintatico:
                 'IDENT': 46}
         self.index = -1
         self.lista = lista
+        self.lista_interpretador = []
 
     def consome(self, token_esperado):
         self.index+=1
@@ -146,7 +147,7 @@ class AnalisadorSintatico:
     def stmtList(self):
         prox_index = self.index + 1
         lista_tupla_prox = lista[prox_index]
-        if(lista_tupla_prox[0] not in (self.tokensnome['interger'], self.tokensnome['for']), self.tokensnome['write'], self.tokensnome['read'], self.tokensnome['begin'], self.tokensnome['if'], self.tokensnome['IDENT'], self.tokensnome['while']):
+        if(lista_tupla_prox[0] in (self.tokensnome['interger'], self.tokensnome['for'], self.tokensnome['write'], self.tokensnome['read'], self.tokensnome['begin'], self.tokensnome['if'], self.tokensnome['IDENT'], self.tokensnome['while'], self.tokensnome[';'])):
             self.stmt()
             self.stmtList()
             return
@@ -168,6 +169,8 @@ class AnalisadorSintatico:
             self.ifStmt()
         elif(lista_tupla_prox[0] == self.tokensnome['begin']):
             self.bloco()
+        elif(lista_tupla_prox[0] == self.tokensnome[';']):
+            self.consome(self.tokensnome[';'])
         else:
             print('ERRO NA LINHA: ', lista_tupla_prox)
             print('TOKENS ESPERADOS: begin if IDENT while read write for')
