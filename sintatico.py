@@ -92,20 +92,23 @@ class AnalisadorSintatico:
         self.consome(self.tokensnome[':'])
         tipo = self.typefunc()
         self.consome(self.tokensnome[';'])
-        if (tipo === "int"):
-            self.lista_interpretador.push(("", "", lista[self.index][1], None))
-        elif (tipo === "float"):
-            self.lista_interpretador.push(("", "", lista[self.index][1], None))
-        elif (tipo === "string"):
-            self.lista_interpretador.push(("", "", lista[self.index][1], None))
+        for identificador in lista_variaveis :
+            if (tipo == "int"):
+                self.lista_interpretador.append(("=", identificador, 0,None))
+            elif (tipo == "float"):
+                self.lista_interpretador.append(("=", identificador, 0,None))
+            elif (tipo == "string"):
+                self.lista_interpretador.append(("=", identificador, '',None))
         return
 
     def listaIdent(self):
         listaLocal = []
         self.consome(self.tokensnome['IDENT'])
-        listaLocal.push(lista[self.index][1])
-        listaLocal.extend(self.restoIdentList())
-        return lista
+        listaLocal.append(lista[self.index][1])
+        listaResto = self.restoIdentList()
+        if listaResto:
+            listaLocal.extend(listaResto)
+        return listaLocal 
 
     def restoIdentList(self):
         prox_index = self.index + 1
@@ -114,10 +117,11 @@ class AnalisadorSintatico:
         if(lista_tupla_prox[0] == self.tokensnome[',']):
             self.consome(self.tokensnome[','])
             self.consome(self.tokensnome['IDENT'])
-            listaLocal.push(lista[self.index][1])
-            listaLocal.extend(self.restoIdentList())
-        else:
-            return listaLocal
+            listaLocal.append(lista[self.index][1])
+            listaResto = self.restoIdentList()
+            if listaResto:
+                listaLocal.extend(listaResto)
+        return listaLocal
 
     def restoDeclaration(self):
         prox_index = self.index + 1
@@ -197,6 +201,7 @@ class AnalisadorSintatico:
     #---------------------------
 
     # comando for
+    # deixar o atrib igual ao declarations, colocar duas label(colocar gerador de label) antes de stmt verificar se o identificador chegou no endFor e chamar o jump para a label correspondente
     def forStmt(self):
         self.consome(self.tokensnome['for'])
         self.atrib()
