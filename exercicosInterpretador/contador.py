@@ -9,14 +9,7 @@
 from interpretador import Interpretador
 
 def programa():
-    l = [("+", "i", 0, 0),
-         ("LABEL", "Loop", None, None),
-         ("+", "i", "i", 1),
-         ("CALL", "PRINT", None, "i"),
-         (">=", "valida", "i", 10),
-         ("IF", "valida", "Fim", "Loop"),
-         ("LABEL", "Fim", None, None)
-         ]
+    l = [("CALL", "PRINT", 0, None)]
 
     interpretador = Interpretador()
     interpretador.carregar_labels(l)

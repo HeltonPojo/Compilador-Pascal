@@ -28,7 +28,7 @@ class Interpretador:
             elif operador == 'CALL':
                 self.chamada_sistema(instrucao)
             elif operador == 'LABEL':
-                pass  # Labels são processados na inicialização
+                pass
             else:
                 raise ValueError(f"Operador desconhecido: {operador}")
             self.ponteiro += 1
