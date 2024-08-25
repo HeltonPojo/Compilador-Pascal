@@ -1,3 +1,4 @@
+from sintatico import AnalisadorSintatico
 class Interpretador:
     def __init__(self):
         self.variaveis = {}
