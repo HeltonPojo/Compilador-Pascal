@@ -55,7 +55,7 @@ class AnalisadorSintatico:
 
     def gerarLabel(self, funcao):
         self.contadorLabels += 1
-        return funcao + "" + self.contadorLabels
+        return funcao + str(self.contadorLabels)
 
     def consome(self, token_esperado):
         self.index += 1
@@ -316,9 +316,15 @@ class AnalisadorSintatico:
     # comando while
 
     def whileStmt(self):
-        self.consome(["while"])
+        self.consome(self.tokensnome["while"])
+        labelInicio = self.gerarLabel("whileInicio")
+        labelFim = self.gerarLabel("whileFim")
+        self.lista_interpretador.append(("LABEL", labelInicio, None, None))
         self.expr()
+        self.lista_interpretador.append(("JUMP_IF_FALSE", labelFim, None, None))
         self.stmt()
+        self.lista_interpretador.append(("JUMP", labelInicio, None, None))
+        self.lista_interpretador.append(("LABEL", labelFim, None, None))
         return
 
     # comando if
@@ -347,16 +353,15 @@ class AnalisadorSintatico:
 
     def atrib(self):
         self.consome(self.tokensnome["IDENT"])
-        indentificador = lista[self.index][1]
-        self.consome(self.tokensnome["=:"])
-        # TODO: Calcular a expressão para atribuir ao identficador
-        self.expr()
-        self.lista_interpretador.append(("=", indentificador, 10, None))
+        identificador = self.lista[self.index][1]
+        self.consome(self.tokensnome[":="])  # Corrigir para ":=" em vez de "=:"
+        valor = self.expr()
+        self.lista_interpretador.append(("=", identificador, valor, None))
         return
 
     def expr(self):
-        self.orfunc()
-        return
+        valor = self.orfunc()
+        return valor
 
     def orfunc(self):
         self.andfunc()
@@ -494,20 +499,27 @@ class AnalisadorSintatico:
 
     def factor(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
-        if lista_tupla_prox[0] == self.tokensnome["interger"]:
-            self.consome(self.tokensnome["interger"])
+        lista_tupla_prox = self.lista[prox_index]
+        if (
+            lista_tupla_prox[0] == self.tokensnome["interger"]
+        ):  # Corrigir para "integer"
+            self.consome(self.tokensnome["interger"])  # Corrigir para "integer"
+            return self.lista[self.index][1]
         elif lista_tupla_prox[0] == self.tokensnome["real"]:
             self.consome(self.tokensnome["real"])
+            return self.lista[self.index][1]
         elif lista_tupla_prox[0] == self.tokensnome["IDENT"]:
             self.consome(self.tokensnome["IDENT"])
+            return self.lista[self.index][1]
         elif lista_tupla_prox[0] == self.tokensnome["("]:
             self.consome(self.tokensnome["("])
-            self.expr()
+            valor = self.expr()
             self.consome(self.tokensnome[")"])
+            return valor
         elif lista_tupla_prox[0] == self.tokensnome["STR"]:
             self.consome(self.tokensnome["STR"])
-        return
+            return self.lista[self.index][1]
+        return None
 
 
 # ---------
