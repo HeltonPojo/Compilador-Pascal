@@ -46,7 +46,8 @@ class AnalisadorSintatico:
             '{' : 43,
             '}' : 44,
             'STR' : 45,  # Literal de string
-            'IDENT' : 46  # Identificadores (ex.: nomes de variáveis)
+            'IDENT' : 46,# Identificadores (ex.: nomes de variáveis)
+            'NUM' : 47   # Adicionado token para números
         }
         self.index = -1
         self.lista = lista
