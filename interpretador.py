@@ -15,8 +15,8 @@ class Interpretador:
             instrucao = instrucoes[self.ponteiro]
             operador = instrucao[0]
 
-            # Ignorar operadores não executáveis como `program`, `var`, etc.
-            if operador in (17, 18):  # 17 = 'program', 18 = 'var'
+            # Ignorar tokens não executáveis
+            if operador in (17, 18, 19, 20, 21, 22, 23, 35, 36, 37, 38, 39, 40, 46):
                 self.ponteiro += 1
                 continue
 
@@ -36,10 +36,13 @@ class Interpretador:
                 self.chamada_sistema(instrucao)
             elif operador == 'LABEL':
                 pass
+            elif operador == 33:  # Caso específico para `write`
+                self.chamada_sistema(instrucao)
             else:
                 raise ValueError(f"Operador desconhecido: {operador}")
 
             self.ponteiro += 1
+
 
     def operacao_aritmetica(self, instrucao):
         operador, guardar, operando1, operando2 = instrucao
@@ -118,15 +121,17 @@ class Interpretador:
         self.ponteiro = self.labels[label] - 1
 
     def chamada_sistema(self, instrucao):
-        _, comando, valor, variavel = instrucao
+        comando = instrucao[1]
         if comando == 'PRINT':
-            palavra = ''
-            if type(variavel) == type('a'):
-                print(self.variaveis.get(variavel, 'Variavel não atribuida'))
+            valor = instrucao[2]
+            if isinstance(valor, str) or instrucao[0] == 45:  # Verifica se é uma string literal
+                print(valor.strip("'"))  # Imprime a string removendo as aspas externas
             else:
-                print(valor)
+                print(self.variaveis.get(valor, valor))  # Imprime o valor da variável ou o valor diretamente
         elif comando == 'SCAN':
-            self.variaveis[valor] = input()
+            var = instrucao[2]
+            self.variaveis[var] = input()  # Lê entrada do usuário e armazena na variável
+
 
 if __name__ == "__main__":
     import lexico, sys
