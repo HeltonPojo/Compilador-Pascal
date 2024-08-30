@@ -324,7 +324,7 @@ class AnalisadorSintatico:
         self.consome(self.tokensnome['if'])
         temp_var = self.gera_temp_var()
 
-        # Gerar código para a expressão condicional
+        # Usando a função `expr` com a variável temporária
         condicao = self.expr(temp_var)
         
         # Gerar rótulos para os saltos
@@ -352,6 +352,7 @@ class AnalisadorSintatico:
 
 
 
+
     def atrib(self):
         var_name = self.lista[self.index + 1][1]
         self.consome(self.tokensnome['IDENT'])
@@ -359,8 +360,13 @@ class AnalisadorSintatico:
         valor = self.expr()
         self.lista_interpretador.append(("=", var_name, valor, None))
 
-    def expr(self):
-        # Pega o próximo token (que pode ser um identificador, um número, etc.)
+    def expr(self, temp_var=None):
+        """
+            Esta função processa uma expressão e retorna uma variável temporária ou um rótulo válido.
+            Se `temp_var` for fornecido, ele será usado; caso contrário, uma nova variável temporária será gerada.
+            """
+
+        # Pega o próximo token (que pode ser um identificador, número, etc.)
         token = self.lista[self.index]
         
         # Se o token for um identificador ou número, consome ele e continua
@@ -375,19 +381,26 @@ class AnalisadorSintatico:
                 operador = prox_token[1]  # O operador (+, -, etc.)
                 right = self.expr()  # Recursivamente consome a parte direita da expressão
                 
-                temp_var = self.gera_temp_var()  # Gera uma variável temporária para armazenar o resultado
+                # Gera uma variável temporária se não foi fornecida
+                if temp_var is None:
+                    temp_var = self.gera_temp_var()
+
+                # Adiciona a operação na lista de instruções intermediárias
                 self.lista_interpretador.append((operador, temp_var, left, right))
                 return temp_var
             else:
                 return left  # Se não há operação, retorna o valor diretamente
+        
+        # Se a expressão começa com '(', processa uma sub-expressão
         elif token[0] == self.tokensnome['(']:
-            # Se a expressão começa com '(', processa uma sub-expressão
             self.consome(self.tokensnome['('])
             result = self.expr()
             self.consome(self.tokensnome[')'])
             return result
+        
         else:
             raise Exception(f"Token inesperado: {token}")
+
 
     def orfunc(self):
         left_temp = self.andfunc()
