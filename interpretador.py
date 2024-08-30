@@ -59,6 +59,9 @@ class Interpretador:
         label1 = instrucao[2]  # Label para o próximo bloco ou fim do `if`
         label2 = instrucao[3]  # Label para o bloco `else` ou fim
 
+        print(f"condicao_var: {condicao_var}, valor_condicao: {valor_condicao}")
+        print(f"label1: {label1}, label2: {label2}")
+
         if valor_condicao:
             print(f"Condição verdadeira, pulando para {label1}")
             self.ponteiro = self.labels.get(label1, self.ponteiro) - 1
@@ -67,8 +70,10 @@ class Interpretador:
             if label2 in self.labels:
                 self.ponteiro = self.labels[label2] - 1
             else:
-                print(f"Rótulo não encontrado: {label2}")
+                print(f"Rótulo {label2} não encontrado na lista de labels: {self.labels.keys()}")
                 raise KeyError(f"Rótulo não encontrado: {label2}")
+
+
     def ler_entrada(self, instrucao):
         var_name = instrucao[1]
         valor = input(f"Entrada para {var_name}: ")  # Solicita a entrada do usuário
