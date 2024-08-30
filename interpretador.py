@@ -38,6 +38,8 @@ class Interpretador:
                 pass
             elif operador == 33:  # Caso específico para `write`
                 self.chamada_sistema(instrucao)
+            elif operador == 45:  # Tratamento para string literal
+                self.tratar_string(instrucao)    
             else:
                 raise ValueError(f"Operador desconhecido: {operador}")
 
@@ -108,6 +110,11 @@ class Interpretador:
     def atribuicao(self, instrucao):
         _, guardar, operando1, _ = instrucao
         self.variaveis[guardar] = self.variaveis.get(operando1, 0)
+    
+    def tratar_string(self, instrucao):
+        string_val = instrucao[1]
+        print(string_val.strip("'"))  # Remove as aspas externas e imprime a string
+    
 
     def condicional(self, instrucao):
         _, condicao, label1, label2 = instrucao
