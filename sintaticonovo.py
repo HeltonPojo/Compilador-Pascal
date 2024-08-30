@@ -1,4 +1,4 @@
-class AnalisadorSintatico:
+class AnalisadorSintatico2:
     def __init__(self, lista):  
         # Inicializa o analisador sintático com uma lista de tokens.
         self.lista = lista
@@ -249,12 +249,12 @@ def exprFinalCorrecao(self):
         raise Exception(f"ERRO: Esperado 'then' na linha {prox_index + 1}, encontrado {lista_tupla_prox}")
 
 # Substituição do método expr original pelo corrigido
-setattr(AnalisadorSintatico, 'expr', exprFinalCorrecao)
+setattr(AnalisadorSintatico2, 'expr', exprFinalCorrecao)
 
 if __name__ == "__main__":
     import lexico, sys
     if len(sys.argv) > 1:
         lista = lexico.main(sys.argv[1])
-        AnSint = AnalisadorSintatico(lista)
+        AnSint = AnalisadorSintatico2(lista)
         listaDoInterpretador = AnSint.function()
         print(listaDoInterpretador)

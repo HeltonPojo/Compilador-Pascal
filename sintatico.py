@@ -1,144 +1,5 @@
-
-# sintatico.py
-# Este arquivo implementa o analisador sintático para o compilador de Pascal.
-# A classe AnalisadorSintatico consome tokens e verifica a sintaxe do código-fonte.
-# O código intermediário é gerado na forma de tuplas, que são posteriormente interpretadas e executadas.
-# Contém funções para análise de declarações de variáveis, laços de repetição, e expressões condicionais.
-
+import sys
 class AnalisadorSintatico:
-    # Construtor da classe. Inicializa os tokens e a lista de tokens a serem analisados.
-    def __init__(self, lista) -> None:
-        # Dicionário que mapeia símbolos e palavras-chave para seus respectivos tokens.
-        self.tokensnome = {'+' : 1,
-                           '-': 2,
-                           '/': 3,
-                           '*': 4,
-                           'mod': 5,
-                           'div': 6,
-                           'or': 7,
-                           'and': 8,
-                           'not': 9,
-                           '==': 10,
-                           '<>': 11,
-                           '>': 12,
-                           '<': 13,
-                           '>=': 14,
-                           '<=': 15,
-                           ':=': 16,
-                           'program': 17,
-                           'var': 18,
-                           'interger': 19,
-                           'real': 20,
-                           'string': 21,
-                           'begin': 22,
-                           'end': 23,
-                           'for': 24,
-                           'to': 25,
-                           'while': 26,
-                           'do': 27,
-                           'break': 28,
-                           'continue': 29,
-                           'if': 30,
-                           'else': 31,
-                           'then': 32,
-                           'write': 33,
-                           'read': 34,
-                           ';': 35,
-                           ':': 36,
-                           ',': 37,
-                           '.': 38,
-                           '(': 39,
-                           ')': 40,
-                           '[': 41,
-                           ']': 42,
-                           '{': 43,
-                           '}': 44,
-                           'STR': 45,
-                           'IDENT': 46}
-        # Índice atual da análise de tokens
-        self.index = -1
-        # Lista de tokens a serem analisados
-        self.lista = lista
-        # Lista de tuplas que representará o código intermediário
-        self.lista_interpretador = []
-
-    # Consome o próximo token da lista, verificando se é o esperado
-    def consome(self, token_esperado):
-        self.index += 1  # Incrementa o índice para avançar para o próximo token
-        lista_tupla = self.lista[self.index]  # Obtém a tupla do token atual
-        if lista_tupla[0] == token_esperado:
-            return  # Se o token for o esperado, continua a execução
-        else:
-            # Caso contrário, imprime um erro e encerra a execução
-            print('ERRO NA LINHA: ', lista_tupla)
-            print('TOKEN ESPERADO: ', token_esperado)
-            sys.exit()
-
-    # Função principal que inicia a análise do código-fonte
-    def function(self):
-        # Consome o token 'program'
-        self.consome(self.tokensnome['program'])
-        # Consome o identificador do programa
-        self.consome(self.tokensnome['IDENT'])
-        # Consome o ponto e vírgula
-        self.consome(self.tokensnome[';'])
-        # Chama a análise de declarações de variáveis
-        self.declarations()
-        # Consome o token 'begin'
-        self.consome(self.tokensnome['begin'])
-        # Analisa a lista de comandos
-        self.stmtList()
-        # Consome o token 'end'
-        self.consome(self.tokensnome['end'])
-        # Consome o ponto final
-        self.consome(self.tokensnome['.'])
-        # Se chegou até aqui, significa que não houve erros
-        print('passou sem erros')
-        # Retorna a lista de código intermediário
-        return self.lista_interpretador
-
-    # Função para analisar declarações de variáveis
-    def declarations(self):
-        self.consome(self.tokensnome['var'])  # Consome o token 'var'
-        self.declaration()  # Chama a função para analisar uma declaração
-        self.restoDeclaration()  # Analisa possíveis declarações subsequentes
-        return
-
-    # Função que analisa uma declaração específica de variáveis
-    def declaration(self):
-        lista_variaveis = self.listaIdent()  # Obtém a lista de identificadores
-        self.consome(self.tokensnome[':'])  # Consome o token ':'
-        tipo = self.typefunc()  # Obtém o tipo das variáveis
-        self.consome(self.tokensnome[';'])  # Consome o ponto e vírgula
-        # Inicializa as variáveis conforme o tipo
-        valor_inicial = 0 if tipo == "int" else 0.0 if tipo == "float" else '' if tipo == "string" else None
-        for identificador in lista_variaveis:
-            self.lista_interpretador.append(("=", identificador, valor_inicial, None))
-        return
-
-    # Função que analisa uma lista de identificadores
-    def listaIdent(self):
-        listaLocal = []  # Cria uma lista local para armazenar os identificadores
-        self.consome(self.tokensnome['IDENT'])  # Consome o primeiro identificador
-        listaLocal.append(lista[self.index][1])  # Adiciona o identificador à lista local
-        listaResto = self.restoIdentList()  # Analisa possíveis identificadores subsequentes
-        if listaResto:
-            listaLocal.extend(listaResto)  # Adiciona os identificadores subsequentes à lista local
-        return listaLocal  # Retorna a lista de identificadores
-
-    # Função que analisa possíveis identificadores subsequentes em uma lista de identificadores
-    def restoIdentList(self):
-        prox_index = self.index + 1  # Obtém o próximo índice
-        lista_tupla_prox = lista[prox_index]  # Obtém a tupla do próximo token
-        listaLocal = []  # Cria uma lista local para armazenar os identificadores
-        if(lista_tupla_prox[0] == self.tokensnome[',']):
-            self.consome(self.tokensnome[','])  # Consome a vírgula
-            self.consome(self.tokensnome['IDENT'])  # Consome o próximo identificador
-            listaLocal.append(lista[self.index][1])  # Adiciona o identificador à lista local
-        return listaLocal  # Retorna a lista de identificadores subsequentes
-
-class AnalisadorSintatico:
-     # Inicializa a tabela de tokens e o índice para navegação na lista de tokens.
     def __init__(self, lista) -> None:
         self.tokensnome = {'+' : 1,
                 '-': 2,
@@ -189,7 +50,7 @@ class AnalisadorSintatico:
         self.index = -1
         self.lista = lista
         self.lista_interpretador = []
-# Consome o token atual se for o esperado, senão, gera um erro.
+
     def consome(self, token_esperado):
         self.index+=1
         lista_tupla = self.lista[self.index]
@@ -202,7 +63,7 @@ class AnalisadorSintatico:
             return
 
     #------------------------------------
-    # funcao principal inicia a análise sintática para verificar se o programa Pascal está bem formado.
+    # funcao principal
     #------------------------------------
 
     def function(self):
@@ -227,16 +88,7 @@ class AnalisadorSintatico:
         self.restoDeclaration()
         return
 
-
     def declaration(self):
-        lista_variaveis = self.listaIdent()
-        self.consome(self.tokensnome[':'])
-        tipo = self.typefunc()
-        self.consome(self.tokensnome[';'])
-        valor_inicial = 0 if tipo == "int" else 0.0 if tipo == "float" else '' if tipo == "string" else None
-        for identificador in lista_variaveis:
-            self.lista_interpretador.append(("=", identificador, valor_inicial, None))
-        return
         lista_variaveis = self.listaIdent()
         self.consome(self.tokensnome[':'])
         tipo = self.typefunc()
@@ -351,33 +203,7 @@ class AnalisadorSintatico:
 
     # comando for
     # deixar o atrib igual ao declarations, colocar duas label(colocar gerador de label) antes de stmt verificar se o identificador chegou no endFor e chamar o jump para a label correspondente
-
     def forStmt(self):
-        # Gerações de labels para controle do fluxo
-        label_inicio = self.controle.geraLabel()
-        label_fim = self.controle.geraLabel()
-
-        # Consome a parte da atribuição
-        self.consome(self.tokensnome['for'])
-        atribuicao, listaAtribuicao = self.atrib()
-        self.lista_interpretador.extend(listaAtribuicao)
-
-        # Geração de código para a condição do loop
-        self.consome(self.tokensnome['to'])
-        self.lista_interpretador.append(("label", label_inicio, None, None))
-        condicao, listaCondicao = self.expr()
-        self.lista_interpretador.extend(listaCondicao)
-        self.lista_interpretador.append(("IF_FALSE", condicao, label_fim, None))
-
-        # Consome o corpo do loop
-        self.consome(self.tokensnome['do'])
-        listaStmt = self.stmt()
-        self.lista_interpretador.extend(listaStmt)
-
-        # Incremento e volta para a condição
-        self.lista_interpretador.append(("JUMP", label_inicio, None, None))
-        self.lista_interpretador.append(("label", label_fim, None, None))
-        return
         self.consome(self.tokensnome['for'])
         self.atrib()
         self.consome(self.tokensnome['to'])
@@ -458,28 +284,7 @@ class AnalisadorSintatico:
 
     # comando while
 
-
     def whileStmt(self):
-        # Gerações de labels para controle do fluxo
-        label_inicio = self.controle.geraLabel()
-        label_fim = self.controle.geraLabel()
-
-        # Geração de código para a condição do loop
-        self.consome(self.tokensnome['while'])
-        self.lista_interpretador.append(("label", label_inicio, None, None))
-        condicao, listaCondicao = self.expr()
-        self.lista_interpretador.extend(listaCondicao)
-        self.lista_interpretador.append(("IF_FALSE", condicao, label_fim, None))
-
-        # Consome o corpo do loop
-        self.consome(self.tokensnome['do'])
-        listaStmt = self.stmt()
-        self.lista_interpretador.extend(listaStmt)
-
-        # Volta para a condição
-        self.lista_interpretador.append(("JUMP", label_inicio, None, None))
-        self.lista_interpretador.append(("label", label_fim, None, None))
-        return
         self.consome(['while'])
         self.expr()
         self.stmt()
@@ -487,33 +292,7 @@ class AnalisadorSintatico:
 
     # comando if
 
-
     def ifStmt(self):
-        # Geração de label para o bloco else ou final
-        label_else = self.controle.geraLabel()
-        label_fim = self.controle.geraLabel()
-
-        # Consome a condição do if
-        self.consome(self.tokensnome['if'])
-        condicao, listaCondicao = self.expr()
-        self.lista_interpretador.extend(listaCondicao)
-        self.lista_interpretador.append(("IF_FALSE", condicao, label_else, None))
-
-        # Consome o bloco do then
-        self.consome(self.tokensnome['then'])
-        listaStmtThen = self.stmt()
-        self.lista_interpretador.extend(listaStmtThen)
-        self.lista_interpretador.append(("JUMP", label_fim, None, None))
-
-        # Consome o bloco do else, se existir
-        self.lista_interpretador.append(("label", label_else, None, None))
-        if self.lista[self.index][0] == self.tokensnome['else']:
-            self.consome(self.tokensnome['else'])
-            listaStmtElse = self.stmt()
-            self.lista_interpretador.extend(listaStmtElse)
-
-        self.lista_interpretador.append(("label", label_fim, None, None))
-        return
         self.consome(self.tokensnome['if'])
         self.expr()
         self.consome(self.tokensnome['then'])
