@@ -1,3 +1,40 @@
+
+# lexico.py
+# Este arquivo implementa o analisador léxico para o compilador de Pascal.
+# Ele lê o código-fonte, identifica tokens e os classifica, preparando-os para a análise sintática.
+# Funções de leitura de arquivos e verificação de tokens estão incluídas neste arquivo.
+
+import re
+import sys
+
+# Função que lê o conteúdo de um arquivo de código-fonte
+def ler_arquivo(nome_arquivo):
+    # Abre o arquivo no modo de leitura e retorna uma lista de linhas
+    with open(nome_arquivo, 'r') as arquivo:
+        return arquivo.readlines()
+
+# Função que lê os tokens de um arquivo de definição de tokens
+def ler_tokens(nome_arquivo_tokens):
+    # Abre o arquivo de tokens no modo de leitura e retorna uma lista de linhas
+    with open(nome_arquivo_tokens, 'r') as arquivo_tokens:
+        return arquivo_tokens.readlines()
+
+# Função que verifica a correspondência de tokens em uma linha de código
+def verificar_tokens(palavra_tkn, lista_tokens):
+    linha_atual = 0  # Inicializa o contador de linhas
+    for linha in lista_tokens:
+        linha_atual += 1  # Incrementa o número da linha atual
+        coluna_atual = 0  # Inicializa o contador de colunas
+        # Encontra todas as palavras ou símbolos na linha usando expressão regular
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
+        for palavra in palavras:
+            coluna_atual = linha.find(palavra, coluna_atual)  # Encontra a posição da palavra na linha
+            if palavra_tkn == palavra:
+                # Se o token corresponde à palavra, retorna a posição
+                return (linha_atual, coluna_atual + 1)
+            coluna_atual += len(palavra)  # Avança para a próxima coluna após a palavra
+    return None  # Retorna None se o token não for encontrado
+
 import re
 import sys
 
@@ -14,7 +51,7 @@ def verificar_tokens(palavra_tkn, lista_tokens):
     for linha in lista_tokens:
         linha_atual += 1
         coluna_atual = 0
-        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S|\s', linha)
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
         for palavra in palavras:
             coluna_atual = linha.find(palavra, coluna_atual)
             if palavra_tkn == palavra:
@@ -30,7 +67,7 @@ def parser(arquivo, lista_tokens):
     for linha in arquivo:
         linha_atual += 1
         coluna_atual = 0
-        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S|\s', linha)
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
         if '//' in linha:
             pass
         else:
