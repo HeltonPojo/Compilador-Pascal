@@ -1,7 +1,9 @@
-class AnalisadorSintatico2:
+class AnalisadorSintatico:
+    lista_tupla_prox = [] 
     def __init__(self, lista):  
         # Inicializa o analisador sintático com uma lista de tokens.
         self.lista = lista
+       
         self.index = -1  # Define o índice atual para -1 (indica que nenhum token foi processado ainda).
         self.tokensnome = {  # Mapeamento de tokens para seus respectivos códigos numéricos.
             '+' : 1,
@@ -51,7 +53,7 @@ class AnalisadorSintatico2:
             'STR' : 45,  # Literal de string
             'IDENT' : 46  # Identificadores (ex.: nomes de variáveis)
         }
-        
+        self.lista_interpretador = []
         self.gerador = GeradorDeLabelsETemporarias()  # Instancia o gerador de labels e temporários.
 
     def consome(self, token_esperado):
@@ -66,17 +68,20 @@ class AnalisadorSintatico2:
         
     def function(self):
         # Inicia a análise sintática a partir do método stmtList.
+      
         self.stmtList()
 
     def stmtList(self):
         # Analisa uma lista de declarações.
         prox_index = self.index + 1  # Determina o próximo índice a ser analisado.
         lista_tupla_prox = self.lista[prox_index]  # Obtém o próximo token.
+        print(lista_tupla_prox)
         if lista_tupla_prox[0] in (
             self.tokensnome['integer'], self.tokensnome['for'], self.tokensnome['write'],
             self.tokensnome['read'], self.tokensnome['begin'], self.tokensnome['if'],
             self.tokensnome['IDENT'], self.tokensnome['while'], self.tokensnome[';']):
             # Se o token pertence a um dos tokens esperados, analisa a declaração e continua a análise.
+            print("ok")
             self.stmt()
             self.restoStmtList()
 
@@ -249,12 +254,15 @@ def exprFinalCorrecao(self):
         raise Exception(f"ERRO: Esperado 'then' na linha {prox_index + 1}, encontrado {lista_tupla_prox}")
 
 # Substituição do método expr original pelo corrigido
-setattr(AnalisadorSintatico2, 'expr', exprFinalCorrecao)
+setattr(AnalisadorSintatico, 'expr', exprFinalCorrecao)
 
 if __name__ == "__main__":
     import lexico, sys
+    
     if len(sys.argv) > 1:
         lista = lexico.main(sys.argv[1])
-        AnSint = AnalisadorSintatico2(lista)
+        AnSint = AnalisadorSintatico(lista)
         listaDoInterpretador = AnSint.function()
         print(listaDoInterpretador)
+        
+       # print(lista_tupla_prox)

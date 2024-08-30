@@ -1,10 +1,8 @@
-
-
 program show_do_milhao;
 // teste de comentario
 //teste32
 
-var op1, op2, op3:interger;
+var op1, op2, op3:integer;
 begin
     write('Digite o n1.\n');
     read(op1);
