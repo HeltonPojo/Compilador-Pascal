@@ -39,13 +39,16 @@ import re
 import sys
 
 def ler_arquivo(nome_arquivo):
+# Lê o conteúdo do arquivo fornecido e retorna uma lista de linhas.
     with open(nome_arquivo, 'r') as arquivo:
         return arquivo.readlines()
 
+# Lê o arquivo de tokens (tokens.txt) e retorna uma lista de tokens.
 def ler_tokens(nome_arquivo_tokens):
     with open(nome_arquivo_tokens, 'r') as arquivo_tokens:
         return arquivo_tokens.readlines()
-
+    
+# Verifica se uma palavra está na lista de tokens e retorna a linha onde foi encontrada.
 def verificar_tokens(palavra_tkn, lista_tokens):
     linha_atual = 0
     for linha in lista_tokens:
@@ -59,6 +62,7 @@ def verificar_tokens(palavra_tkn, lista_tokens):
             coluna_atual += len(palavra)
     return linha_atual, False
 
+# Processa o arquivo de entrada, identificando tokens em cada linha.
 def parser(arquivo, lista_tokens):
     tokens_encontrados = []
     linha_atual = 0

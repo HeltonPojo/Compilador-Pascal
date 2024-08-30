@@ -12,7 +12,7 @@ class Interpretador:
         self.labels = {}  # Dicionário que mapeia labels para posições no código intermediário
         self.ponteiro = 0  # Ponteiro que indica a instrução atual sendo executada
 
-    # Carrega labels a partir da lista de instruções
+    # Carrega labels a partir da lista de instruções para facilitar o controle de fluxo.
     def carregar_labels(self, instrucoes):
         for i, instrucao in enumerate(instrucoes):
             if instrucao[0] == 'LABEL':
@@ -20,6 +20,7 @@ class Interpretador:
 
     # Executa a lista de instruções
     def executar(self, instrucoes):
+         # Executa a lista de instruções uma a uma.
         while self.ponteiro < len(instrucoes):  # Continua executando enquanto houver instruções
             instrucao = instrucoes[self.ponteiro]  # Obtém a instrução atual
             operador = instrucao[0]  # Obtém o operador da instrução
@@ -129,6 +130,7 @@ class Interpretador:
             self.ponteiro += 1
 
     def operacao_aritmetica(self, instrucao):
+        # Realiza operações aritméticas como +, -, *, /.
         operador, guardar, operando1, operando2 = instrucao
         numero1 = 0
         numero2 = 0
@@ -155,6 +157,7 @@ class Interpretador:
             self.variaveis[guardar] = numero1 // numero2
 
     def operacao_logica(self, instrucao):
+        # Realiza operações lógicas como AND, OR, NOT.
         operador, guardar, operando1, operando2 = instrucao
         if operador == 'or':
             self.variaveis[guardar] = self.variaveis.get(operando1, False) or self.variaveis.get(operando2, False)
@@ -164,6 +167,7 @@ class Interpretador:
             self.variaveis[guardar] = not self.variaveis.get(operando1, False)
 
     def operacao_relacional(self, instrucao):
+        # Realiza comparações como ==, >, <, etc.
         operador, guardar, operando1, operando2 = instrucao
         numero1 = 0
         numero2 = 0
@@ -190,10 +194,12 @@ class Interpretador:
             self.variaveis[guardar] = numero1 <= numero2
 
     def atribuicao(self, instrucao):
+        # Atribui valores a variáveis.
         _, guardar, operando1, _ = instrucao
         self.variaveis[guardar] = self.variaveis.get(operando1, 0)
 
     def condicional(self, instrucao):
+        # Processa a instrução IF-THEN.
         _, condicao, label1, label2 = instrucao
         if self.variaveis.get(condicao, False):
             self.ponteiro = self.labels[label1] - 1
@@ -201,10 +207,12 @@ class Interpretador:
             self.ponteiro = self.labels[label2] - 1
 
     def jump(self, instrucao):
+        # Realiza um salto incondicional para um label.
         _, label, _, _ = instrucao
         self.ponteiro = self.labels[label] - 1
 
     def chamada_sistema(self, instrucao):
+                # Realiza chamadas de sistema como leitura e escrita.
         _, comando, valor, variavel = instrucao
         if comando == 'PRINT':
             palavra = ''
