@@ -94,9 +94,12 @@ class AnalisadorSintatico:
         return self.lista_interpretador  # Retorna a lista de instruções executáveis
 
     def declaration(self):
-        lista_variaveis = self.listaIdent()
-        self.consome(self.tokensnome[':'])
-        tipo = self.typefunc()
+        if self.lookahead() == self.tokensnome['var']:
+            self.consome(self.tokensnome['var'])  # Consome 'var'
+            
+        lista_variaveis = self.listaIdent()  # Processa a lista de identificadores
+        self.consome(self.tokensnome[':'])  # Consome ':'
+        tipo = self.typefunc()  # Processa o tipo da variável
 
         if tipo == self.tokensnome['integer']:
             valor_inicial = 0
@@ -108,8 +111,8 @@ class AnalisadorSintatico:
         for var in lista_variaveis:
             self.lista_interpretador.append(('=', var, valor_inicial, None))
 
-        # Adicionar para garantir que consome o ';' ao final de cada declaração
-        self.consome(self.tokensnome[';'])
+        self.consome(self.tokensnome[';'])  # Consome ';' após a declaração
+
 
     def listaIdent(self):
         listaLocal = []
