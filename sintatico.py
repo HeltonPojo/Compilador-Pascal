@@ -80,23 +80,18 @@ class AnalisadorSintatico:
 
 
     def function(self):
-        #print(f"Tokens atuais: {self.lista[self.index:self.index+5]}")  # Depuração
-        self.consome(self.tokensnome['program'])
-        self.consome(self.tokensnome['IDENT'])
+        self.consome(self.tokensnome['program'])  # Consome o 'program' sem adicionar à lista de instruções
+        self.consome(self.tokensnome['IDENT'])  # Consome o identificador do programa sem adicionar à lista de instruções
         self.consome(self.tokensnome[';'])
-        self.declarations()
-        #print(f"Esperando 'begin', Tokens atuais: {self.lista[self.index:self.index+5]}")  # Depuração
-        self.consome(self.tokensnome['begin'])
-        self.stmtList()
+        
+        self.declarations()  # Processa declarações (var, integer, etc.), mas não adiciona tokens não executáveis
+        
+        self.consome(self.tokensnome['begin'])  # Começo do bloco de execução
+        self.stmtList()  # Gera instruções executáveis
         self.consome(self.tokensnome['end'])
         self.consome(self.tokensnome['.'])
-        return self.lista_interpretador
-
-    def declarations(self):
-        self.consome(self.tokensnome["var"])
-        self.declaration()
-        self.restoDeclaration()
-        return
+        
+        return self.lista_interpretador  # Retorna apenas instruções executáveis
 
     def declaration(self):
         lista_variaveis = self.listaIdent()
