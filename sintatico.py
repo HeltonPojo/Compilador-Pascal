@@ -73,13 +73,14 @@ class AnalisadorSintatico:
             raise Exception('Fim inesperado do arquivo.')
 
         token_atual = self.lista[self.index]
-
-        #print(f"Esperando token: {token_esperado}, Token atual: {token_atual[0]} na linha {self.index}")
+        print(f"Consumindo token: {token_atual}, Esperado: {token_esperado}")
 
         if token_atual[0] == token_esperado:
+            print(f"Token {token_atual[1]} consumido com sucesso.")
             return
         else:
             raise Exception(f"ERRO NA LINHA: {self.index} TOKEN ESPERADO: {token_esperado}, TOKEN ENCONTRADO: {token_atual[0]}, VALOR DO TOKEN: {token_atual[1]}")
+
 
 
     def function(self):
@@ -170,28 +171,29 @@ class AnalisadorSintatico:
         self.consome(self.tokensnome['end'])
 
     def stmtList(self):
-        prox_index = self.index + 1
-        token_prox = self.lista[prox_index]
-        if token_prox[0] in (
-            self.tokensnome["integer"],
-            self.tokensnome["for"],
+        prox_token = self.lista[self.index + 1]
+        print(f"Iniciando stmtList, próximo token: {prox_token}")
+
+        if prox_token[0] in (
+            self.tokensnome["if"],
+            self.tokensnome["while"],
             self.tokensnome["write"],
             self.tokensnome["read"],
             self.tokensnome["begin"],
-            self.tokensnome["if"],
             self.tokensnome["IDENT"],
-            self.tokensnome["while"],
             self.tokensnome[";"],
         ):
             self.stmt()
-            self.stmtList()
-            return
+            self.stmtList()  # Recursão para processar a lista de statements
         else:
+            print(f"Encerrando stmtList, token não esperado: {prox_token}")
             return
+
 
     def stmt(self):
         prox_token = self.lista[self.index + 1]
-        
+        print(f"Processando instrução, próximo token: {prox_token}")
+
         if prox_token[0] == self.tokensnome['if']:
             self.ifStmt()
         elif prox_token[0] == self.tokensnome['while']:
@@ -208,6 +210,7 @@ class AnalisadorSintatico:
             self.consome(self.tokensnome[';'])
         else:
             raise Exception(f"Token inesperado ao processar instrução: {prox_token}")
+
 
 
 
@@ -324,31 +327,33 @@ class AnalisadorSintatico:
     def ifStmt(self):
         print("Iniciando processamento de ifStmt")
         self.consome(self.tokensnome['if'])  # Consome o token 'if'
-
-        # Verifica o próximo token para garantir que seja parte de uma expressão válida
-        prox_token = self.lista[self.index + 1]
+        
+        prox_token = self.lookahead()
         print(f"Próximo token após 'if': {prox_token}")
-        
-        if prox_token[0] in (self.tokensnome['IDENT'], self.tokensnome['NUM'], self.tokensnome['(']):
-            condicao = self.expr()
+
+        # Verifica se o próximo token é válido para iniciar uma expressão
+        if prox_token in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
+            condicao = self.expr()  # Processa a expressão condicional
         else:
-            raise Exception(f"Token inesperado ao avaliar condição do if: {prox_token}")
+            raise Exception(f"Erro de fluxo: Token inesperado após 'if': {prox_token}")
 
-        # Gerar rótulos para os saltos
-        label_else = self.gera_label()  # Rótulo para o bloco else ou fim do if
-        label_end = self.gera_label()   # Rótulo para o fim do bloco if
+        # Processa o restante da instrução if
+        label_else = self.gera_label()
+        label_end = self.gera_label()
 
-        # Adicionar instrução de salto condicional usando rótulos gerados
         self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
-        
         self.consome(self.tokensnome['then'])  # Consome o token 'then'
         self.stmt()  # Processa o corpo do 'if'
         
-        # Salto incondicional para o fim do if
         self.lista_interpretador.append(('JUMP', label_end, None, None))
         self.lista_interpretador.append(('label', label_else, None, None))
         
-    
+        if self.lookahead()[0] == self.tokensnome['else']:
+            self.consome(self.tokensnome['else'])
+            self.stmt()
+
+        self.lista_interpretador.append(('label', label_end, None, None))
+        print("Finalizando processamento de ifStmt")
 
 
 
@@ -362,35 +367,18 @@ class AnalisadorSintatico:
         valor = self.expr()
         self.lista_interpretador.append(("=", var_name, valor, None))
 
-    def expr(self, temp_var=None):
-        print(f"Iniciando expr com temp_var: {temp_var}")
-        
-        token = self.lista[self.index]
+    def expr(self):
+        print(f"Iniciando expr com self.index: {self.index}")
+        token = self.lookahead()
         print(f"Token atual em expr: {token}")
 
-        if token[0] in [self.tokensnome['IDENT'], self.tokensnome['NUM']]:
-            self.consome(token[0])
-            left = token[1]
-            prox_token = self.lista[self.index + 1]
-
-            if prox_token[0] in [self.tokensnome['+'], self.tokensnome['-'], self.tokensnome['*'], self.tokensnome['/']]:
-                self.consome(prox_token[0])
-                operador = prox_token[1]
-                right = self.expr()
-                if temp_var is None:
-                    temp_var = self.gera_temp_var()
-                self.lista_interpretador.append((operador, temp_var, left, right))
-                return temp_var
-            else:
-                return left
-        elif token[0] == self.tokensnome['(']:
-            self.consome(self.tokensnome['('])
-            result = self.expr()
-            self.consome(self.tokensnome[')'])
-            return result
+        # Verifica se o token é uma tupla e se o primeiro elemento é um IDENT ou NUM
+        if isinstance(token, tuple) and token[0] in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
+            # Processa a expressão com o identificador ou número
+            self.consome(token[0])  # Consome o token atual
+            return token
         else:
-            print(f"Token inesperado encontrado em expr: {token}")
-            raise Exception(f"Token inesperado em expressão: {token}")
+            raise Exception(f"Token inesperado em expr: {token}")
 
 
 
