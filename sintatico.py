@@ -80,18 +80,18 @@ class AnalisadorSintatico:
 
 
     def function(self):
-        self.consome(self.tokensnome['program'])  # Consome o 'program' sem adicionar à lista de instruções
-        self.consome(self.tokensnome['IDENT'])  # Consome o identificador do programa sem adicionar à lista de instruções
-        self.consome(self.tokensnome[';'])
+        self.consome(self.tokensnome['program'])  # Consome 'program'
+        self.consome(self.tokensnome['IDENT'])  # Espera um identificador como nome do programa
+        self.consome(self.tokensnome[';'])  # Consome o ';' após o nome do programa
         
-        self.declaration()  # Processa declarações (var, integer, etc.), mas não adiciona tokens não executáveis
+        if self.lookahead() == self.tokensnome['var']:  # Verifica se 'var' está presente
+            self.declaration()  # Processa as declarações de variáveis
         
-        self.consome(self.tokensnome['begin'])  # Começo do bloco de execução
-        self.stmtList()  # Gera instruções executáveis
-        self.consome(self.tokensnome['end'])
-        self.consome(self.tokensnome['.'])
-        
-        return self.lista_interpretador  # Retorna apenas instruções executáveis
+        self.consome(self.tokensnome['begin'])  # Consome 'begin' para começar o corpo do programa
+        self.stmtList()  # Processa as instruções do corpo do programa
+        self.consome(self.tokensnome['end'])  # Consome 'end'
+        self.consome(self.tokensnome['.'])  # Consome o ponto final do programa
+        return self.lista_interpretador  # Retorna a lista de instruções executáveis
 
     def declaration(self):
         lista_variaveis = self.listaIdent()
