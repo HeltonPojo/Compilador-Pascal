@@ -19,7 +19,7 @@ class AnalisadorSintatico:
             ":=": 16,
             "program": 17,
             "var": 18,
-            "interger": 19,
+            "integer": 19,  # Corrigido
             "real": 20,
             "string": 21,
             "begin": 22,
@@ -58,30 +58,54 @@ class AnalisadorSintatico:
         return funcao + str(self.contadorLabels)
 
     def consome(self, token_esperado):
-        self.index += 1
-        lista_tupla = self.lista[self.index]
-        if lista_tupla[0] == token_esperado:
-            return
-        else:
-            print("ERRO NA LINHA: ", lista_tupla)
-            print("TOKEN ESPERADO: ", token_esperado)
-            sys.exit()
-            return
+        while True:
+            self.index += 1
+            # Verifica se atingiu o final da lista
+            if self.index >= len(self.lista):
+                print('Fim inesperado do arquivo.')
+                sys.exit()
+            
+            lista_tupla = self.lista[self.index]
+            
+            # Verifica se o token é uma string e se é vazio ou uma linha em branco
+            if isinstance(lista_tupla[0], str) and (lista_tupla[0].strip() == '' or lista_tupla[0] == '\n'):
+                continue  # Pula linhas em branco ou tokens vazios
+
+            # Ignora qualquer token que não seja 'program' até encontrar 'program'
+            if token_esperado == self.tokensnome['program'] and lista_tupla[0] != token_esperado:
+                continue
+
+            # Captura o lexema, tipo e valor do token atual
+            lexema = lista_tupla[1] if len(lista_tupla) > 1 else None
+            tipo = lista_tupla[2] if len(lista_tupla) > 2 else None
+            valor = lexema  # Dependendo do contexto, isso pode precisar ser ajustado.
+
+            if token_esperado == self.tokensnome['read']:
+                self.lista_interpretador.append(('CALL', 'SCAN', lexema, tipo))
+            if token_esperado == self.tokensnome['write']:
+                self.lista_interpretador.append(('CALL', 'WRITE', valor, None))
+
+            if lista_tupla[0] == token_esperado:
+                return
+            else:
+                print('ERRO NA LINHA: ', lista_tupla)
+                print('TOKEN ESPERADO: ', token_esperado)
+                sys.exit()
+                return
 
     # ------------------------------------
     # funcao principal
     # ------------------------------------
 
     def function(self):
-        self.consome(self.tokensnome["program"])
-        self.consome(self.tokensnome["IDENT"])
-        self.consome(self.tokensnome[";"])
+        self.consome(self.tokensnome['program'])
+        self.consome(self.tokensnome['IDENT'])
+        self.consome(self.tokensnome[';'])
         self.declarations()
-        self.consome(self.tokensnome["begin"])
+        self.consome(self.tokensnome['begin'])
         self.stmtList()
-        self.consome(self.tokensnome["end"])
-        self.consome(self.tokensnome["."])
-        print("passou sem erros")
+        self.consome(self.tokensnome['end'])
+        self.consome(self.tokensnome['.'])
         return self.lista_interpretador
 
     # ------------------------------------
@@ -96,22 +120,23 @@ class AnalisadorSintatico:
 
     def declaration(self):
         lista_variaveis = self.listaIdent()
-        self.consome(self.tokensnome[":"])
+        self.consome(self.tokensnome[':'])
         tipo = self.typefunc()
-        self.consome(self.tokensnome[";"])
-        for identificador in lista_variaveis:
-            if tipo == "int":
-                self.lista_interpretador.append(("=", identificador, 0, None))
-            elif tipo == "float":
-                self.lista_interpretador.append(("=", identificador, 0, None))
-            elif tipo == "string":
-                self.lista_interpretador.append(("=", identificador, "", None))
-        return
+
+        if tipo == self.tokensnome['integer']:
+            valor_inicial = 0
+        elif tipo == self.tokensnome['real']:
+            valor_inicial = 0.0
+        elif tipo == self.tokensnome['string']:
+            valor_inicial = ''
+        
+        for var in lista_variaveis:
+            self.lista_interpretador.append(('=', var, valor_inicial, None))
 
     def listaIdent(self):
         listaLocal = []
         self.consome(self.tokensnome["IDENT"])
-        listaLocal.append(lista[self.index][1])
+        listaLocal.append(self.lista[self.index][1])  # Substituído 'lista' por 'self.lista'
         listaResto = self.restoIdentList()
         if listaResto:
             listaLocal.extend(listaResto)
@@ -119,12 +144,12 @@ class AnalisadorSintatico:
 
     def restoIdentList(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         listaLocal = []
         if lista_tupla_prox[0] == self.tokensnome[","]:
             self.consome(self.tokensnome[","])
             self.consome(self.tokensnome["IDENT"])
-            listaLocal.append(lista[self.index][1])
+            listaLocal.append(self.lista[self.index][1])  # Substituído 'lista' por 'self.lista'
             listaResto = self.restoIdentList()
             if listaResto:
                 listaLocal.extend(listaResto)
@@ -132,7 +157,7 @@ class AnalisadorSintatico:
 
     def restoDeclaration(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["IDENT"]:
             self.declaration()
             self.restoDeclaration()
@@ -141,9 +166,9 @@ class AnalisadorSintatico:
 
     def typefunc(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
-        if lista_tupla_prox[0] == self.tokensnome["interger"]:
-            self.consome(self.tokensnome["interger"])
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
+        if lista_tupla_prox[0] == self.tokensnome["integer"]:  # Corrigido
+            self.consome(self.tokensnome["integer"])  # Corrigido
             return "int"
         elif lista_tupla_prox[0] == self.tokensnome["real"]:
             self.consome(self.tokensnome["real"])
@@ -153,10 +178,8 @@ class AnalisadorSintatico:
             return "string"
         else:
             print("ERRO NA LINHA: ", lista_tupla_prox)
-            print("TOKENS ESPERADOS: interger real string")
+            print("TOKENS ESPERADOS: integer real string")
             sys.exit()
-            return
-        return
 
     # ------------------------------------
     # instrucoes dos programas
@@ -171,9 +194,9 @@ class AnalisadorSintatico:
 
     def stmtList(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] in (
-            self.tokensnome["interger"],
+            self.tokensnome["integer"],
             self.tokensnome["for"],
             self.tokensnome["write"],
             self.tokensnome["read"],
@@ -192,7 +215,7 @@ class AnalisadorSintatico:
     # Com base na gramatica miniC e usar o sintatico que o Eduardo mandou para fazer essa parte (desconsiderar a multiplicação) tem que mudar a string no expr
     def stmt(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["for"]:
             self.forStmt()
         elif (
@@ -221,7 +244,6 @@ class AnalisadorSintatico:
     # ---------------------------
 
     # comando for
-    # TODO: deixar o atrib igual ao declarations, colocar duas label(colocar gerador de label) antes de stmt verificar se o identificador chegou no endFor e chamar o jump para a label correspondente
     def forStmt(self):
         self.consome(self.tokensnome["for"])
         self.atrib()
@@ -237,28 +259,28 @@ class AnalisadorSintatico:
 
     def endFor(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["IDENT"]:
             self.consome(self.tokensnome["IDENT"])
-            return True, lista[self.index][1]
-        elif lista_tupla_prox[0] == self.tokensnome["interger"]:
-            self.consome(self.tokensnome["interger"])
-            return False, lista[self.index][1]
+            return True, self.lista[self.index][1]
+        elif lista_tupla_prox[0] == self.tokensnome["integer"]:  # Corrigido
+            self.consome(self.tokensnome["integer"])  # Corrigido
+            return False, self.lista[self.index][1]
         else:
             print("ERRO NA LINHA: ", lista_tupla_prox)
-            print("TOKENS ESPERADOS: IDENT interger")
+            print("TOKENS ESPERADOS: IDENT integer")
             sys.exit()
 
     # comandos de IO
 
     def ioStmt(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["read"]:
             self.consome(self.tokensnome["read"])
             self.consome(self.tokensnome["("])
             self.consome(self.tokensnome["IDENT"])
-            operador = lista[self.index][1]
+            operador = self.lista[self.index][1]
             self.consome(self.tokensnome[")"])
             self.consome(self.tokensnome[";"])
             self.lista_interpretador.append(("CALL", "SCAN", operador, None))
@@ -277,7 +299,7 @@ class AnalisadorSintatico:
 
     def restoOut(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome[","]:
             self.consome(self.tokensnome[","])
             self.outList()
@@ -285,30 +307,30 @@ class AnalisadorSintatico:
 
     def out(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["STR"]:
             self.consome(self.tokensnome["STR"])
             self.lista_interpretador.append(
-                ("CALL", "PRINT", lista[self.index][1], None)
+                ("CALL", "PRINT", self.lista[self.index][1], None)
             )
         elif lista_tupla_prox[0] == self.tokensnome["IDENT"]:
             self.consome(self.tokensnome["IDENT"])
             self.lista_interpretador.append(
-                ("CALL", "PRINT", None, lista[self.index][1])
+                ("CALL", "PRINT", None, self.lista[self.index][1])
             )
-        elif lista_tupla_prox[0] == self.tokensnome["interger"]:
-            self.consome(self.tokensnome["interger"])
+        elif lista_tupla_prox[0] == self.tokensnome["integer"]:  # Corrigido
+            self.consome(self.tokensnome["integer"])  # Corrigido
             self.lista_interpretador.append(
-                ("CALL", "PRINT", lista[self.index][1], None)
+                ("CALL", "PRINT", self.lista[self.index][1], None)
             )
         elif lista_tupla_prox[0] == self.tokensnome["real"]:
             self.consome(self.tokensnome["real"])
             self.lista_interpretador.append(
-                ("CALL", "PRINT", lista[self.index][1], None)
+                ("CALL", "PRINT", self.lista[self.index][1], None)
             )
         else:
             print("ERRO NA LINHA: ", lista_tupla_prox)
-            print("TOKENS ESPERADOS: IDENT STR interger real")
+            print("TOKENS ESPERADOS: IDENT STR integer real")
             sys.exit()
             return
         return
@@ -339,7 +361,7 @@ class AnalisadorSintatico:
 
     def elsePart(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["else"]:
             self.consome(self.tokensnome["else"])
             self.stmt()
@@ -354,7 +376,7 @@ class AnalisadorSintatico:
     def atrib(self):
         self.consome(self.tokensnome["IDENT"])
         identificador = self.lista[self.index][1]
-        self.consome(self.tokensnome[":="])  # Corrigir para ":=" em vez de "=:"
+        self.consome(self.tokensnome[":="])  # Corrigido
         valor = self.expr()
         self.lista_interpretador.append(("=", identificador, valor, None))
         return
@@ -368,16 +390,18 @@ class AnalisadorSintatico:
         self.restoOr()
         return
 
-    def restoOr(self):
-        prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
-        if lista_tupla_prox[0] == self.tokensnome["or"]:
-            self.consome(self.tokensnome["or"])
-            self.andfunc()
-            self.restoOr()
+    def restoOr(self, resultant):
+        if self.l.token_atual == self.tokensnome['or']:
+            opr = self.l.lexema
+            self.consome(self.tokensnome['or'])
+            leftValue, listaComandos, resultado = self.functionAnd()
+            novotemp = self.gerar_temp() # Ficará o resultado do OR
+            listaComandos.append((opr, novotemp, resultado, resultant))
+            leftValueb, listaComandosb, resultadob = self.restoOr(novotemp)
+            listaComandos.extend(listaComandosb)
+            return False, listaComandos, resultadob
         else:
-            return
-        return
+            return True, [], resultant
 
     def andfunc(self):
         self.notfunc()
@@ -386,7 +410,7 @@ class AnalisadorSintatico:
 
     def restoAnd(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["and"]:
             self.consome(self.tokensnome["and"])
             self.notfunc()
@@ -397,7 +421,7 @@ class AnalisadorSintatico:
 
     def notfunc(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["not"]:
             self.consome(self.tokensnome["not"])
             self.notfunc()
@@ -413,7 +437,7 @@ class AnalisadorSintatico:
 
     def restoRel(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["=="]:
             self.consome(self.tokensnome["=="])
             self.add()
@@ -443,7 +467,7 @@ class AnalisadorSintatico:
 
     def restoAdd(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["+"]:
             self.consome(self.tokensnome["+"])
             self.mult()
@@ -463,7 +487,7 @@ class AnalisadorSintatico:
 
     def restoMult(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["*"]:
             self.consome(self.tokensnome["*"])
             self.uno()
@@ -486,7 +510,7 @@ class AnalisadorSintatico:
 
     def uno(self):
         prox_index = self.index + 1
-        lista_tupla_prox = lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if lista_tupla_prox[0] == self.tokensnome["+"]:
             self.consome(self.tokensnome["+"])
             self.uno()
@@ -499,11 +523,11 @@ class AnalisadorSintatico:
 
     def factor(self):
         prox_index = self.index + 1
-        lista_tupla_prox = self.lista[prox_index]
+        lista_tupla_prox = self.lista[prox_index]  # Substituído 'lista' por 'self.lista'
         if (
-            lista_tupla_prox[0] == self.tokensnome["interger"]
-        ):  # Corrigir para "integer"
-            self.consome(self.tokensnome["interger"])  # Corrigir para "integer"
+            lista_tupla_prox[0] == self.tokensnome["integer"]  # Corrigido
+        ):  
+            self.consome(self.tokensnome["integer"])  # Corrigido
             return self.lista[self.index][1]
         elif lista_tupla_prox[0] == self.tokensnome["real"]:
             self.consome(self.tokensnome["real"])
@@ -520,7 +544,6 @@ class AnalisadorSintatico:
             self.consome(self.tokensnome["STR"])
             return self.lista[self.index][1]
         return None
-
 
 # ---------
 # the end
