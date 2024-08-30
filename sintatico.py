@@ -190,53 +190,25 @@ class AnalisadorSintatico:
 
     def stmt(self):
         prox_index = self.index + 1
-        token_prox = self.lista[prox_index]
-        self.consome(self.tokensnome['if'])
-        temp_var = self.gera_temp_var()
+        lista_tupla_prox = self.lista[prox_index]
 
-        # Gerar código para a expressão condicional
-        condicao = self.expr(temp_var)
-        
-        # Gerar rótulos para os saltos
-        label_else = self.gera_label()  # Rótulo para o bloco else ou fim do if
-        label_end = self.gera_label()   # Rótulo para o fim do bloco if
-
-        # Adicionar instrução de salto condicional
-        self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
-        
-        self.consome(self.tokensnome['then'])
-        self.stmt()
-        
-        # Salto incondicional para o fim do if
-        self.lista_interpretador.append(('JUMP', label_end, None, None))
-        
-        # Definir o rótulo do bloco else
-        self.lista_interpretador.append(('label', label_else, None, None))
-        
-        if self.lookahead() == self.tokensnome['else']:
-            self.consome(self.tokensnome['else'])
-            self.stmt()
-
-        # Definir o rótulo para o fim do if
-        self.lista_interpretador.append(('label', label_end, None, None))
-        if token_prox[0] == self.tokensnome["for"]:
-            self.forStmt()
-        elif token_prox[0] in [self.tokensnome["read"], self.tokensnome["write"]]:
-            self.ioStmt()
-        elif token_prox[0] == self.tokensnome["while"]:
-            self.whileStmt()
-        elif token_prox[0] == self.tokensnome["IDENT"]:
-            self.atrib()
-        elif token_prox[0] == self.tokensnome["if"]:
+        if lista_tupla_prox[0] == self.tokensnome['if']:
             self.ifStmt()
-        elif token_prox[0] == self.tokensnome["begin"]:
+        elif lista_tupla_prox[0] == self.tokensnome['write']:
+            self.ioStmt()  # Lidar com instruções de saída
+        elif lista_tupla_prox[0] == self.tokensnome['read']:
+            self.ioStmt()  # Lidar com instruções de entrada
+        elif lista_tupla_prox[0] == self.tokensnome['while']:
+            self.whileStmt()
+        elif lista_tupla_prox[0] == self.tokensnome['IDENT']:
+            self.atrib()
+        elif lista_tupla_prox[0] == self.tokensnome['begin']:
             self.bloco()
-        elif token_prox[0] == self.tokensnome[";"]:
-            self.consome(self.tokensnome[";"])
+        elif lista_tupla_prox[0] == self.tokensnome[';']:
+            self.consome(self.tokensnome[';'])
         else:
-            raise Exception(f"ERRO NA LINHA: {prox_index} TOKEN INESPERADO: {token_prox}")
+            raise Exception(f"ERRO NA LINHA: {prox_index} TOKEN ESPERADO: {lista_tupla_prox[0]}")
 
-        return
 
     def forStmt(self):
         self.consome(self.tokensnome['for'])
