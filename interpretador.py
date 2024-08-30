@@ -6,10 +6,13 @@ class Interpretador:
         self.ponteiro = 0
 
     def carregar_labels(self, instrucoes):
+        print("Carregando labels...")
         for i, instrucao in enumerate(instrucoes):
-            if instrucao[0] == 'LABEL':
+            if instrucao[0] == 'label':
                 label = instrucao[1]
                 self.labels[label] = i
+                print(f"Label {label} carregado na posição {i}")
+
 
     def executar(self, instrucoes):
         while self.ponteiro < len(instrucoes):
@@ -57,23 +60,15 @@ class Interpretador:
         label2 = instrucao[3]  # Label para o bloco `else` ou fim
 
         if valor_condicao:
-            self.ponteiro = self.labels[label1] - 1  # Executa o bloco `then`
+            print(f"Condição verdadeira, pulando para {label1}")
+            self.ponteiro = self.labels.get(label1, self.ponteiro) - 1
         else:
+            print(f"Condição falsa, tentando pular para {label2}")
             if label2 in self.labels:
-                self.ponteiro = self.labels[label2] - 1  # Pula para o bloco `else` ou fim do `if`
+                self.ponteiro = self.labels[label2] - 1
             else:
-                raise ValueError(f"Rótulo não encontrado: {label2}")
-
-            if valor_condicao:
-                self.ponteiro += 1  # Executa a próxima instrução se a condição for verdadeira
-            else:
-                # Pula para a instrução depois do `else` ou fim do bloco `if`
-                while self.ponteiro < len(self.instrucoes):
-                    self.ponteiro += 1
-                    proxima_instrucao = self.instrucoes[self.ponteiro]
-                    if proxima_instrucao[0] == 'LABEL' or proxima_instrucao[0] == 'JUMP':
-                        break
-
+                print(f"Rótulo não encontrado: {label2}")
+                raise KeyError(f"Rótulo não encontrado: {label2}")
     def ler_entrada(self, instrucao):
         var_name = instrucao[1]
         valor = input(f"Entrada para {var_name}: ")  # Solicita a entrada do usuário
@@ -150,11 +145,26 @@ class Interpretador:
     
 
     def condicional(self, instrucao):
-        _, condicao, label1, label2 = instrucao
-        if self.variaveis.get(condicao, False):
-            self.ponteiro = self.labels[label1] - 1
+        condicao_var = instrucao[1]
+        valor_condicao = self.variaveis.get(condicao_var, False)
+
+        label1 = instrucao[2]  # Label para o próximo bloco ou fim do `if`
+        label2 = instrucao[3]  # Label para o bloco `else` ou fim
+
+        print(f"condicao_var: {condicao_var}, valor_condicao: {valor_condicao}")
+        print(f"label1: {label1}, label2: {label2}")
+
+        if valor_condicao:
+            print(f"Condição verdadeira, pulando para {label1}")
+            self.ponteiro = self.labels.get(label1, self.ponteiro) - 1
         else:
-            self.ponteiro = self.labels[label2] - 1
+            print(f"Condição falsa, tentando pular para {label2}")
+            if label2 in self.labels:
+                self.ponteiro = self.labels[label2] - 1
+            else:
+                print(f"Rótulo {label2} não encontrado na lista de labels: {self.labels.keys()}")
+                raise KeyError(f"Rótulo não encontrado: {label2}")
+
 
     def jump(self, instrucao):
         _, label, _, _ = instrucao

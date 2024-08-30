@@ -57,7 +57,9 @@ class AnalisadorSintatico:
     def gera_label(self):
         label = f"label_{self.label_count}"
         self.label_count += 1
+        print(f"Gerando label: {label}")  # Adiciona este print para depuração
         return label
+
 
     def gera_temp_var(self):
         temp_var = f"temp_{self.temp_var_count}"
@@ -189,6 +191,34 @@ class AnalisadorSintatico:
     def stmt(self):
         prox_index = self.index + 1
         token_prox = self.lista[prox_index]
+        self.consome(self.tokensnome['if'])
+        temp_var = self.gera_temp_var()
+
+        # Gerar código para a expressão condicional
+        condicao = self.expr(temp_var)
+        
+        # Gerar rótulos para os saltos
+        label_else = self.gera_label()  # Rótulo para o bloco else ou fim do if
+        label_end = self.gera_label()   # Rótulo para o fim do bloco if
+
+        # Adicionar instrução de salto condicional
+        self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
+        
+        self.consome(self.tokensnome['then'])
+        self.stmt()
+        
+        # Salto incondicional para o fim do if
+        self.lista_interpretador.append(('JUMP', label_end, None, None))
+        
+        # Definir o rótulo do bloco else
+        self.lista_interpretador.append(('label', label_else, None, None))
+        
+        if self.lookahead() == self.tokensnome['else']:
+            self.consome(self.tokensnome['else'])
+            self.stmt()
+
+        # Definir o rótulo para o fim do if
+        self.lista_interpretador.append(('label', label_end, None, None))
         if token_prox[0] == self.tokensnome["for"]:
             self.forStmt()
         elif token_prox[0] in [self.tokensnome["read"], self.tokensnome["write"]]:
@@ -511,4 +541,5 @@ if __name__ == "__main__":
         lista = lexico.main(sys.argv[1])
         AnSint = AnalisadorSintatico(lista)
         listaDoInterpretador = AnSint.function()
+        print("Lista de instruções gerada pelo sintático:")
         print(listaDoInterpretador)
