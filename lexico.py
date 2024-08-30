@@ -54,7 +54,7 @@ def verificar_tokens(palavra_tkn, lista_tokens):
     for linha in lista_tokens:
         linha_atual += 1
         coluna_atual = 0
-        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S|\s', linha)
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
         for palavra in palavras:
             coluna_atual = linha.find(palavra, coluna_atual)
             if palavra_tkn == palavra:
@@ -71,28 +71,30 @@ def parser(arquivo, lista_tokens):
     for linha in arquivo:
         linha_atual += 1
         coluna_atual = 0
-        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S|\s', linha)
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
         if '//' in linha:
-            pass
-        else:
-            for palavra in palavras:
-                if '"' == palavra or "'" == palavra and aspas_abertas:
-                    string_lex += palavra
-                    aspas_abertas = False
-                    tokens_encontrados.append((45, string_lex, linha_atual, coluna_atual))
-                    string_lex = ''
-                elif '"' in palavra or "'" in palavra or aspas_abertas:
-                    string_lex += palavra
-                    aspas_abertas = True
+            continue  # Ignorar comentários
+        for palavra in palavras:
+            if palavra.isspace():
+                continue  # Ignorar espaços em branco e novas linhas
+            if '"' == palavra or "'" == palavra and aspas_abertas:
+                string_lex += palavra
+                aspas_abertas = False
+                tokens_encontrados.append((45, string_lex, linha_atual, coluna_atual))
+                string_lex = ''
+            elif '"' in palavra or "'" in palavra or aspas_abertas:
+                string_lex += palavra
+                aspas_abertas = True
+            else:
+                coluna_atual = linha.find(palavra, coluna_atual)
+                token_linha, is_token = verificar_tokens(palavra, lista_tokens)
+                if is_token:
+                    tokens_encontrados.append((token_linha, palavra, linha_atual, coluna_atual))
                 else:
-                    coluna_atual = linha.find(palavra, coluna_atual)
-                    token_linha, is_token = verificar_tokens(palavra, lista_tokens)
-                    if is_token:
-                        tokens_encontrados.append((token_linha, palavra, linha_atual, coluna_atual))
-                    else:
-                        tokens_encontrados.append((46, palavra, linha_atual, coluna_atual))
-                    coluna_atual += len(palavra)
+                    tokens_encontrados.append((46, palavra, linha_atual, coluna_atual))
+                coluna_atual += len(palavra)
     return tokens_encontrados
+
 
 def main(nome_arquivo):
     nome_arquivo_tokens = 'tokens.txt'

@@ -2,7 +2,7 @@ program show_do_milhao;
 // teste de comentario
 //teste32
 
-var op1, op2, op3:integer;
+var op1, op2, op3:interger;
 begin
     write('Digite o n1.\n');
     read(op1);
