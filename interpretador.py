@@ -39,12 +39,18 @@ class Interpretador:
             elif operador == 33:  # Caso específico para `write`
                 self.chamada_sistema(instrucao)
             elif operador == 45:  # Tratamento para string literal
-                self.tratar_string(instrucao)    
+                self.tratar_string(instrucao) 
+            elif operador == 34:  # Caso específico para `read`
+                self.ler_entrada(instrucao)      
             else:
                 raise ValueError(f"Operador desconhecido: {operador}")
 
             self.ponteiro += 1
 
+    def ler_entrada(self, instrucao):
+        var_name = instrucao[1]
+        valor = input(f"Entrada para {var_name}: ")  # Solicita a entrada do usuário
+        self.variaveis[var_name] = valor  # Armazena o valor na variável correspondente
 
     def operacao_aritmetica(self, instrucao):
         operador, guardar, operando1, operando2 = instrucao
