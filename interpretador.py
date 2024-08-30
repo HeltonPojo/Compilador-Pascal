@@ -14,6 +14,12 @@ class Interpretador:
         while self.ponteiro < len(instrucoes):
             instrucao = instrucoes[self.ponteiro]
             operador = instrucao[0]
+
+            # Ignorar operadores não executáveis como `program`, `var`, etc.
+            if operador in ('program', 'var'):
+                self.ponteiro += 1
+                continue
+
             if operador in ('+', '-', '*', '/', 'mod', 'div'):
                 self.operacao_aritmetica(instrucao)
             elif operador in ('or', 'and', 'not'):
@@ -32,6 +38,7 @@ class Interpretador:
                 pass
             else:
                 raise ValueError(f"Operador desconhecido: {operador}")
+
             self.ponteiro += 1
 
     def operacao_aritmetica(self, instrucao):
