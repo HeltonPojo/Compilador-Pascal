@@ -8,7 +8,8 @@ class Interpretador:
     def carregar_labels(self, instrucoes):
         for i, instrucao in enumerate(instrucoes):
             if instrucao[0] == 'LABEL':
-                self.labels[instrucao[1]] = i
+                label = instrucao[1]
+                self.labels[label] = i
 
     def executar(self, instrucoes):
         while self.ponteiro < len(instrucoes):
@@ -52,15 +53,26 @@ class Interpretador:
         condicao_var = instrucao[1]
         valor_condicao = self.variaveis.get(condicao_var, False)
 
+        label1 = instrucao[2]  # Label para o próximo bloco ou fim do `if`
+        label2 = instrucao[3]  # Label para o bloco `else` ou fim
+
         if valor_condicao:
-            self.ponteiro += 1  # Executa a próxima instrução se a condição for verdadeira
+            self.ponteiro = self.labels[label1] - 1  # Executa o bloco `then`
         else:
-            # Pula para a instrução depois do `else` ou fim do bloco `if`
-            while self.ponteiro < len(self.instrucoes):
-                self.ponteiro += 1
-                proxima_instrucao = self.instrucoes[self.ponteiro]
-                if proxima_instrucao[0] == 'LABEL' or proxima_instrucao[0] == 'JUMP':
-                    break
+            if label2 in self.labels:
+                self.ponteiro = self.labels[label2] - 1  # Pula para o bloco `else` ou fim do `if`
+            else:
+                raise ValueError(f"Rótulo não encontrado: {label2}")
+
+            if valor_condicao:
+                self.ponteiro += 1  # Executa a próxima instrução se a condição for verdadeira
+            else:
+                # Pula para a instrução depois do `else` ou fim do bloco `if`
+                while self.ponteiro < len(self.instrucoes):
+                    self.ponteiro += 1
+                    proxima_instrucao = self.instrucoes[self.ponteiro]
+                    if proxima_instrucao[0] == 'LABEL' or proxima_instrucao[0] == 'JUMP':
+                        break
 
     def ler_entrada(self, instrucao):
         var_name = instrucao[1]
