@@ -1,4 +1,5 @@
 from sintatico import AnalisadorSintatico
+from os import sys
 
 # interpretador.py
 # Este arquivo implementa o interpretador que executa o código intermediário gerado pelo analisador sintático.
@@ -224,7 +225,7 @@ class Interpretador:
             self.variaveis[valor] = input()
 
 if __name__ == "__main__":
-    import lexico, sys
+    import lexico
     if len(sys.argv) > 1:
         lista = lexico.main(sys.argv[1])
         AnSint = AnalisadorSintatico(lista)
