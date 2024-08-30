@@ -190,25 +190,25 @@ class AnalisadorSintatico:
             return
 
     def stmt(self):
-        prox_index = self.index + 1
-        lista_tupla_prox = self.lista[prox_index]
-
-        if lista_tupla_prox[0] == self.tokensnome['if']:
+        prox_token = self.lista[self.index + 1]
+        
+        if prox_token[0] == self.tokensnome['if']:
             self.ifStmt()
-        elif lista_tupla_prox[0] == self.tokensnome['write']:
-            self.ioStmt()  # Lidar com instruções de saída
-        elif lista_tupla_prox[0] == self.tokensnome['read']:
-            self.ioStmt()  # Lidar com instruções de entrada
-        elif lista_tupla_prox[0] == self.tokensnome['while']:
+        elif prox_token[0] == self.tokensnome['while']:
             self.whileStmt()
-        elif lista_tupla_prox[0] == self.tokensnome['IDENT']:
-            self.atrib()
-        elif lista_tupla_prox[0] == self.tokensnome['begin']:
-            self.bloco()
-        elif lista_tupla_prox[0] == self.tokensnome[';']:
+        elif prox_token[0] == self.tokensnome['write']:
+            self.ioStmt()  # Função que processa instruções de IO, como write e read
+        elif prox_token[0] == self.tokensnome['read']:
+            self.ioStmt()  # Função que processa instruções de IO, como write e read
+        elif prox_token[0] == self.tokensnome['IDENT']:
+            self.atrib()  # Processa atribuições
+        elif prox_token[0] == self.tokensnome['begin']:
+            self.bloco()  # Processa blocos de código
+        elif prox_token[0] == self.tokensnome[';']:
             self.consome(self.tokensnome[';'])
         else:
-            raise Exception(f"ERRO NA LINHA: {prox_index} TOKEN ESPERADO: {lista_tupla_prox[0]}")
+            raise Exception(f"Token inesperado ao processar instrução: {prox_token}")
+
 
 
     def forStmt(self):
@@ -322,12 +322,18 @@ class AnalisadorSintatico:
         self.lista_interpretador.append(("label", label_end, None, None))
 
     def ifStmt(self):
-        self.consome(self.tokensnome['if'])
-        temp_var = self.gera_temp_var()
+        print("Iniciando processamento de ifStmt")
+        self.consome(self.tokensnome['if'])  # Consome o token 'if'
 
-        # Usando a função `expr` com a variável temporária
-        condicao = self.expr(temp_var)
+        # Verifica o próximo token para garantir que seja parte de uma expressão válida
+        prox_token = self.lista[self.index + 1]
+        print(f"Próximo token após 'if': {prox_token}")
         
+        if prox_token[0] in (self.tokensnome['IDENT'], self.tokensnome['NUM'], self.tokensnome['(']):
+            condicao = self.expr()
+        else:
+            raise Exception(f"Token inesperado ao avaliar condição do if: {prox_token}")
+
         # Gerar rótulos para os saltos
         label_else = self.gera_label()  # Rótulo para o bloco else ou fim do if
         label_end = self.gera_label()   # Rótulo para o fim do bloco if
@@ -335,21 +341,16 @@ class AnalisadorSintatico:
         # Adicionar instrução de salto condicional usando rótulos gerados
         self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
         
-        self.consome(self.tokensnome['then'])
-        self.stmt()
+        self.consome(self.tokensnome['then'])  # Consome o token 'then'
+        self.stmt()  # Processa o corpo do 'if'
         
         # Salto incondicional para o fim do if
         self.lista_interpretador.append(('JUMP', label_end, None, None))
-        
-        # Definir o rótulo do bloco else
         self.lista_interpretador.append(('label', label_else, None, None))
         
-        if self.lookahead() == self.tokensnome['else']:
-            self.consome(self.tokensnome['else'])
-            self.stmt()
+    
 
-        # Definir o rótulo para o fim do if
-        self.lista_interpretador.append(('label', label_end, None, None))
+
 
 
 
@@ -362,45 +363,36 @@ class AnalisadorSintatico:
         self.lista_interpretador.append(("=", var_name, valor, None))
 
     def expr(self, temp_var=None):
-        """
-            Esta função processa uma expressão e retorna uma variável temporária ou um rótulo válido.
-            Se `temp_var` for fornecido, ele será usado; caso contrário, uma nova variável temporária será gerada.
-            """
-
-        # Pega o próximo token (que pode ser um identificador, número, etc.)
-        token = self.lista[self.index]
+        print(f"Iniciando expr com temp_var: {temp_var}")
         
-        # Se o token for um identificador ou número, consome ele e continua
+        token = self.lista[self.index]
+        print(f"Token atual em expr: {token}")
+
         if token[0] in [self.tokensnome['IDENT'], self.tokensnome['NUM']]:
             self.consome(token[0])
-            left = token[1]  # O valor ou nome da variável
-        
-            # Verifica se há uma operação binária (+, -, etc.) a ser feita
+            left = token[1]
             prox_token = self.lista[self.index + 1]
+
             if prox_token[0] in [self.tokensnome['+'], self.tokensnome['-'], self.tokensnome['*'], self.tokensnome['/']]:
                 self.consome(prox_token[0])
-                operador = prox_token[1]  # O operador (+, -, etc.)
-                right = self.expr()  # Recursivamente consome a parte direita da expressão
-                
-                # Gera uma variável temporária se não foi fornecida
+                operador = prox_token[1]
+                right = self.expr()
                 if temp_var is None:
                     temp_var = self.gera_temp_var()
-
-                # Adiciona a operação na lista de instruções intermediárias
                 self.lista_interpretador.append((operador, temp_var, left, right))
                 return temp_var
             else:
-                return left  # Se não há operação, retorna o valor diretamente
-        
-        # Se a expressão começa com '(', processa uma sub-expressão
+                return left
         elif token[0] == self.tokensnome['(']:
             self.consome(self.tokensnome['('])
             result = self.expr()
             self.consome(self.tokensnome[')'])
             return result
-        
         else:
-            raise Exception(f"Token inesperado: {token}")
+            print(f"Token inesperado encontrado em expr: {token}")
+            raise Exception(f"Token inesperado em expressão: {token}")
+
+
 
 
     def orfunc(self):
