@@ -51,7 +51,7 @@ def verificar_tokens(palavra_tkn, lista_tokens):
     for linha in lista_tokens:
         linha_atual += 1
         coluna_atual = 0
-        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S|\s', linha)
         for palavra in palavras:
             coluna_atual = linha.find(palavra, coluna_atual)
             if palavra_tkn == palavra:
@@ -67,7 +67,7 @@ def parser(arquivo, lista_tokens):
     for linha in arquivo:
         linha_atual += 1
         coluna_atual = 0
-        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S', linha)
+        palavras = re.findall(r'\w+|==|<>|>|<|>=|<=|:=|\S|\s', linha)
         if '//' in linha:
             pass
         else:
