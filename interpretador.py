@@ -16,7 +16,7 @@ class Interpretador:
             operador = instrucao[0]
 
             # Ignorar operadores não executáveis como `program`, `var`, etc.
-            if operador in ('program', 'var'):
+            if operador in (17, 18):  # 17 = 'program', 18 = 'var'
                 self.ponteiro += 1
                 continue
 
