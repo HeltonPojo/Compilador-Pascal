@@ -138,7 +138,6 @@ class AnalisadorSintatico:
         return listaLocal  # Retorna a lista de identificadores subsequentes
 
 class AnalisadorSintatico:
-     # Inicializa a tabela de tokens e o índice para navegação na lista de tokens.
     def __init__(self, lista) -> None:
         self.tokensnome = {'+' : 1,
                 '-': 2,
@@ -189,7 +188,7 @@ class AnalisadorSintatico:
         self.index = -1
         self.lista = lista
         self.lista_interpretador = []
-# Consome o token atual se for o esperado, senão, gera um erro.
+
     def consome(self, token_esperado):
         self.index+=1
         lista_tupla = self.lista[self.index]
@@ -202,7 +201,7 @@ class AnalisadorSintatico:
             return
 
     #------------------------------------
-    # funcao principal inicia a análise sintática para verificar se o programa Pascal está bem formado.
+    # funcao principal
     #------------------------------------
 
     def function(self):
