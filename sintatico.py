@@ -84,7 +84,7 @@ class AnalisadorSintatico:
         self.consome(self.tokensnome['IDENT'])  # Consome o identificador do programa sem adicionar à lista de instruções
         self.consome(self.tokensnome[';'])
         
-        self.declarations()  # Processa declarações (var, integer, etc.), mas não adiciona tokens não executáveis
+        self.declaration()  # Processa declarações (var, integer, etc.), mas não adiciona tokens não executáveis
         
         self.consome(self.tokensnome['begin'])  # Começo do bloco de execução
         self.stmtList()  # Gera instruções executáveis
