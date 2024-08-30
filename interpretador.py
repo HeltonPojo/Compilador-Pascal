@@ -41,11 +41,26 @@ class Interpretador:
             elif operador == 45:  # Tratamento para string literal
                 self.tratar_string(instrucao) 
             elif operador == 34:  # Caso específico para `read`
-                self.ler_entrada(instrucao)      
+                self.ler_entrada(instrucao)  
+            elif operador == 30:  # Caso específico para `if`
+                self.condicional(instrucao)        
             else:
                 raise ValueError(f"Operador desconhecido: {operador}")
 
             self.ponteiro += 1
+    def condicional(self, instrucao):
+        condicao_var = instrucao[1]
+        valor_condicao = self.variaveis.get(condicao_var, False)
+
+        if valor_condicao:
+            self.ponteiro += 1  # Executa a próxima instrução se a condição for verdadeira
+        else:
+            # Pula para a instrução depois do `else` ou fim do bloco `if`
+            while self.ponteiro < len(self.instrucoes):
+                self.ponteiro += 1
+                proxima_instrucao = self.instrucoes[self.ponteiro]
+                if proxima_instrucao[0] == 'LABEL' or proxima_instrucao[0] == 'JUMP':
+                    break
 
     def ler_entrada(self, instrucao):
         var_name = instrucao[1]
