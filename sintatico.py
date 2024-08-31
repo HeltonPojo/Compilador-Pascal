@@ -1,15 +1,35 @@
 class AnalisadorSintatico:
     def __init__(self, lista) -> None:
-        self.tokensnome = {  # Mapeamento de tokens para seus respectivos códigos numéricos.
+        self.tokensnome = {  
+            'program' : 17,
+            'var' : 18,
+            'integer' : 19,
+            'real' : 20,
+            'string' : 21,
+            'begin' : 22,
+            'end' : 23,
+            'for' : 24,
+            'to' : 25,
+            'while' : 26,
+            'do' : 27,
+            'if' : 30,
+            'else' : 31,
+            'then' : 32,
+            'write' : 33,
+            'read' : 34,
+            ';' : 35,
+            ':' : 36,
+            ',' : 37,
+            '.' : 38,
+            '(' : 39,
+            ')' : 40,
+            'IDENT' : 46,
+            'NUM' : 47,
             '+' : 1,
             '-' : 2,
             '/' : 3,
             '*' : 4,
-            'mod' : 5,
-            'div' : 6,
-            'or' : 7,
-            'and' : 8,
-            'not' : 9,
+            '=' : 14,
             '==' : 10,
             '<>' : 11,
             '>' : 12,
@@ -17,38 +37,7 @@ class AnalisadorSintatico:
             '>=' : 14,
             '<=' : 15,
             ':=' : 16,
-            '=' : 17,  # Adicione essa linha para o operador de igualdade
-            'program' : 18,
-            'var' : 19,
-            'integer' : 20,
-            'real' : 21,
-            'string' : 22,
-            'begin' : 23,
-            'end' : 24,
-            'for' : 25,
-            'to' : 26,
-            'while' : 27,
-            'do' : 28,
-            'break' : 29,
-            'continue' : 30,
-            'if' : 31,
-            'else' : 32,
-            'then' : 33,
-            'write' : 34,
-            'read' : 35,
-            ';' : 36,
-            ':' : 37,
-            ',' : 38,
-            '.' : 39,
-            '(' : 40,
-            ')' : 41,
-            '[' : 42,
-            ']' : 43,
-            '{' : 44,
-            '}' : 45,
-            'STR' : 46,  # Literal de string
-            'IDENT' : 47,  # Identificadores (ex.: nomes de variáveis)
-            'NUM' : 48   # Adicionado token para números
+            'STR' : 45,
         }
         self.index = -1
         self.lista = lista
@@ -97,26 +86,6 @@ class AnalisadorSintatico:
         self.consome(self.tokensnome['end'])  # Consome 'end'
         self.consome(self.tokensnome['.'])  # Consome o ponto final do programa
         return self.lista_interpretador  # Retorna a lista de instruções executáveis
-
-    def declaration(self):
-        if self.lookahead() == self.tokensnome['var']:
-            self.consome(self.tokensnome['var'])  # Consome 'var'
-            
-        lista_variaveis = self.listaIdent()  # Processa a lista de identificadores
-        self.consome(self.tokensnome[':'])  # Consome ':'
-        tipo = self.typefunc()  # Processa o tipo da variável
-
-        if tipo == self.tokensnome['integer']:
-            valor_inicial = 0
-        elif tipo == self.tokensnome['real']:
-            valor_inicial = 0.0
-        elif tipo == self.tokensnome['string']:
-            valor_inicial = ''
-
-        for var in lista_variaveis:
-            self.lista_interpretador.append(('=', var, valor_inicial, None))
-
-        self.consome(self.tokensnome[';'])  # Consome ';' após a declaração
 
 
     def listaIdent(self):
