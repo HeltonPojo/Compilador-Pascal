@@ -5,13 +5,14 @@ class Interpretador:
         self.labels = {}
         self.ponteiro = 0
 
-    def carregar_labels(self, instrucoes):
-        print("Carregando labels...")
-        for i, instrucao in enumerate(instrucoes):
-            if instrucao[0] == 'label':
-                label = instrucao[1]
-                self.labels[label] = i
-                print(f"Label {label} carregado na posição {i}")
+    def carregar_labels(self, lista_instrucoes):
+        for index, instrucao in enumerate(lista_instrucoes):
+            # Verifica se 'instrucao' é uma lista ou tupla antes de tentar acessar seus elementos
+            if isinstance(instrucao, (list, tuple)) and isinstance(instrucao[0], str) and instrucao[0].lower() == 'label':
+                label_name = instrucao[1]
+                self.labels[label_name] = index
+            else:
+                print(f"Instrução inválida na posição {index}: {instrucao}")
 
 
     def executar(self, instrucoes):
@@ -193,9 +194,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         lista = lexico.main(sys.argv[1])
         AnSint = AnalisadorSintatico(lista)
-        AnSint.function()
-
+        listaDoInterpretador = AnSint.function()
         # Carregar e executar o interpretador
         interpretador = Interpretador()
-        interpretador.carregar_labels(lista)
-        interpretador.executar(lista)
+        interpretador.carregar_labels(listaDoInterpretador)
+        interpretador.executar(listaDoInterpretador)
