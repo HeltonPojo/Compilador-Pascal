@@ -1,6 +1,6 @@
 class AnalisadorSintatico:
     def __init__(self, lista) -> None:
-        self.tokensnome = {  
+        self.tokensnome = {
             'program' : 17,
             'var' : 18,
             'integer' : 19,
@@ -71,8 +71,6 @@ class AnalisadorSintatico:
         else:
             raise Exception(f"ERRO NA LINHA: {self.index} TOKEN ESPERADO: {token_esperado}, TOKEN ENCONTRADO: {token_atual[0]}, VALOR DO TOKEN: {token_atual[1]}")
 
-
-
     def function(self):
         self.consome(self.tokensnome['program'])  # Consome 'program'
         self.consome(self.tokensnome['IDENT'])  # Espera um identificador como nome do programa
@@ -89,13 +87,15 @@ class AnalisadorSintatico:
 
 
     def listaIdent(self):
-        listaLocal = []
-        self.consome(self.tokensnome['IDENT'])
-        listaLocal.append(self.lista[self.index][1])
-        listaResto = self.restoIdentList()
-        if listaResto:
-            listaLocal.extend(listaResto)
-        return listaLocal
+        lista_ident = [self.lista[self.index + 1][1]]  # Adiciona o primeiro identificador
+        self.consome(self.tokensnome['IDENT'])  # Consome o identificador
+        
+        while self.lookahead() == self.tokensnome[',']:
+            self.consome(self.tokensnome[','])  # Consome a vírgula
+            lista_ident.append(self.lista[self.index + 1][1])  # Adiciona o próximo identificador
+            self.consome(self.tokensnome['IDENT'])  # Consome o próximo identificador
+            
+        return lista_ident
 
     def restoIdentList(self):
         prox_index = self.index + 1
@@ -109,7 +109,18 @@ class AnalisadorSintatico:
             if listaResto:
                 listaLocal.extend(listaResto)
         return listaLocal
-
+    def declaration(self):
+        self.consome(self.tokensnome['var'])  # Consome a palavra-chave 'var'
+        
+        while self.lookahead() == self.tokensnome['IDENT']:  # Processa todas as declarações de variáveis
+            ident_list = self.listaIdent()  # Processa a lista de identificadores
+            self.consome(self.tokensnome[':'])  # Consome ':'
+            tipo = self.type()  # Processa o tipo da variável
+            
+            for ident in ident_list:
+                self.lista_interpretador.append(('DECLARATION', ident, tipo))
+            
+            self.consome(self.tokensnome[';'])  # Consome ';' após cada declaração
     def restoDeclaration(self):
         prox_index = self.index + 1
         lista_tupla_prox = self.lista[prox_index]
@@ -118,6 +129,20 @@ class AnalisadorSintatico:
             self.restoDeclaration()
         else:
             return
+    def type(self):
+        prox_token = self.lookahead()
+        if prox_token == self.tokensnome['integer']:
+            self.consome(self.tokensnome['integer'])
+            return 'integer'
+        elif prox_token == self.tokensnome['real']:
+            self.consome(self.tokensnome['real'])
+            return 'real'
+        elif prox_token == self.tokensnome['string']:
+            self.consome(self.tokensnome['string'])
+            return 'string'
+        else:
+            raise Exception(f"Tipo desconhecido: {prox_token}")
+            
     def typefunc(self):
         prox_index = self.index + 1
         token_prox = self.lista[prox_index]
@@ -268,17 +293,16 @@ class AnalisadorSintatico:
             self.lista_interpretador.append(("CALL", "PRINT", operador, None))
     
     def lookahead(self):
-        # Verifica se há mais tokens disponíveis
         if self.index + 1 < len(self.lista):
             return self.lista[self.index + 1][0]
         else:
-            return None  # Retorna None se não houver mais tokens
+            return None  # Fim dos tokens
     
     def whileStmt(self):
         label_start = self.gera_label()
         self.lista_interpretador.append(("label", label_start, None, None))
 
-        self.consome(self.tokensnome['while'])
+        self.consomeconsome(self.tokensnome['while'])
 
         temp_var = self.gera_temp_var()
         condicao = self.expr()
