@@ -322,37 +322,32 @@ class AnalisadorSintatico:
         print("Iniciando processamento de ifStmt")
         self.consome(self.tokensnome['if'])  # Consome o token 'if'
         
-        prox_token = self.lookahead()
-        print(f"Próximo token após 'if': {prox_token}")
-
-        # Verifica se o próximo token é válido para iniciar uma expressão
-        if prox_token in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
-            condicao = self.expr()  # Processa a expressão condicional
-            
-            # Verifica e consome o 'then'
+        # Processa a expressão condicional
+        condicao = self.expr()  # Processa a expressão condicional
+        
+        # Verifica e consome o 'then'
+        if self.lookahead() == self.tokensnome['then']:
             self.consome(self.tokensnome['then'])
-            
-            # Processa o restante da instrução if
-            label_else = self.gera_label()
-            label_end = self.gera_label()
-
-            self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
-            self.stmt()  # Processa o corpo do 'if'
-            
-            self.lista_interpretador.append(('JUMP', label_end, None, None))
-            self.lista_interpretador.append(('label', label_else, None, None))
-            
-            # Verifica se há um 'else'
-            prox_token = self.lookahead()
-            if prox_token == self.tokensnome['else']:
-                self.consome(self.tokensnome['else'])
-                self.stmt()
-
-            self.lista_interpretador.append(('label', label_end, None, None))
-            print("Finalizando processamento de ifStmt")
         else:
-            raise Exception(f"Erro de fluxo: Token inesperado após 'if': {prox_token}")
+            raise Exception(f"ERRO NA LINHA: {self.index} TOKEN ESPERADO: 'then', TOKEN ENCONTRADO: {self.lista[self.index + 1]}")
 
+        # Processa o restante da instrução if
+        label_else = self.gera_label()
+        label_end = self.gera_label()
+
+        self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
+        self.stmt()  # Processa o corpo do 'if'
+        
+        self.lista_interpretador.append(('JUMP', label_end, None, None))
+        self.lista_interpretador.append(('label', label_else, None, None))
+        
+        # Verifica se há um 'else'
+        if self.lookahead() == self.tokensnome['else']:
+            self.consome(self.tokensnome['else'])
+            self.stmt()
+
+        self.lista_interpretador.append(('label', label_end, None, None))
+        print("Finalizando processamento de ifStmt")
 
 
 
@@ -367,24 +362,33 @@ class AnalisadorSintatico:
         self.lista_interpretador.append(("=", var_name, valor, None))
 
     def expr(self):
+        # A função expr deve processar toda a expressão condicional
         print(f"Iniciando expr com self.index: {self.index}")
         token = self.lookahead()
         print(f"Token atual em expr: {token}")
 
-        # Verifica se o token é um identificador ou número e consome adequadamente
-        if token == self.tokensnome['IDENT']:
-            # Consome o identificador
-            self.consome(self.tokensnome['IDENT'])
-            return self.lista[self.index][1]  # Retorna o identificador
+        # Verifica se o token é IDENT ou NUM, que são os tipos esperados no início de uma expressão
+        if token in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
+            self.consome(token)  # Consome o primeiro token da expressão
 
-        elif token == self.tokensnome.get('NUM', None):
-            # Consome um número
-            self.consome(self.tokensnome['NUM'])
-            return self.lista[self.index][1]  # Retorna o número
+            # Checa se há um operador relacional ou de igualdade
+            prox_token = self.lookahead()
+            if prox_token in [
+                self.tokensnome['='], 
+                self.tokensnome['=='], 
+                self.tokensnome['<>'], 
+                self.tokensnome['<'], 
+                self.tokensnome['>'], 
+                self.tokensnome['<='], 
+                self.tokensnome['>=']
+            ]:
+                self.consome(prox_token)  # Consome o operador relacional ou de igualdade
+                self.consome(self.tokensnome['IDENT'])  # Consome o segundo identificador/número da expressão
 
+            # Retorna o token de condição processada
+            return token
         else:
             raise Exception(f"Token inesperado em expr: {token}")
-
 
 
 
