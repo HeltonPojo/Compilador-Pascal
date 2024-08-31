@@ -329,14 +329,8 @@ class AnalisadorSintatico:
         if prox_token in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
             condicao = self.expr()  # Processa a expressão condicional
             
-            # Agora, deve-se esperar e consumir um operador relacional como '=', '>', '<', etc.
-            operador_relacional = self.lookahead()
-            if operador_relacional in [self.tokensnome['=='], self.tokensnome['<>'], self.tokensnome['>'], self.tokensnome['<'], self.tokensnome['<='], self.tokensnome['>='], self.tokensnome['=']]:
-                self.consome(operador_relacional)  # Consome o operador relacional
-                comparado = self.expr()  # Consome a expressão à direita do operador
-
-            # Depois que a condição completa for processada, continue verificando o 'then'
-            self.consome(self.tokensnome['then'])  # Consome o token 'then'
+            # Verifica e consome o 'then'
+            self.consome(self.tokensnome['then'])
             
             # Processa o restante da instrução if
             label_else = self.gera_label()
@@ -348,7 +342,9 @@ class AnalisadorSintatico:
             self.lista_interpretador.append(('JUMP', label_end, None, None))
             self.lista_interpretador.append(('label', label_else, None, None))
             
-            if self.lookahead()[0] == self.tokensnome['else']:
+            # Verifica se há um 'else'
+            prox_token = self.lookahead()
+            if prox_token == self.tokensnome['else']:
                 self.consome(self.tokensnome['else'])
                 self.stmt()
 
