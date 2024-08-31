@@ -17,37 +17,38 @@ class AnalisadorSintatico:
             '>=' : 14,
             '<=' : 15,
             ':=' : 16,
-            'program' : 17,
-            'var' : 18,
-            'integer' : 19,
-            'real' : 20,
-            'string' : 21,
-            'begin' : 22,
-            'end' : 23,
-            'for' : 24,
-            'to' : 25,
-            'while' : 26,
-            'do' : 27,
-            'break' : 28,
-            'continue' : 29,
-            'if' : 30,
-            'else' : 31,
-            'then' : 32,
-            'write' : 33,
-            'read' : 34,
-            ';' : 35,
-            ':' : 36,
-            ',' : 37,
-            '.' : 38,
-            '(' : 39,
-            ')' : 40,
-            '[' : 41,
-            ']' : 42,
-            '{' : 43,
-            '}' : 44,
-            'STR' : 45,  # Literal de string
-            'IDENT' : 46,# Identificadores (ex.: nomes de variáveis)
-            'NUM' : 47   # Adicionado token para números
+            '=' : 17,  # Adicione essa linha para o operador de igualdade
+            'program' : 18,
+            'var' : 19,
+            'integer' : 20,
+            'real' : 21,
+            'string' : 22,
+            'begin' : 23,
+            'end' : 24,
+            'for' : 25,
+            'to' : 26,
+            'while' : 27,
+            'do' : 28,
+            'break' : 29,
+            'continue' : 30,
+            'if' : 31,
+            'else' : 32,
+            'then' : 33,
+            'write' : 34,
+            'read' : 35,
+            ';' : 36,
+            ':' : 37,
+            ',' : 38,
+            '.' : 39,
+            '(' : 40,
+            ')' : 41,
+            '[' : 42,
+            ']' : 43,
+            '{' : 44,
+            '}' : 45,
+            'STR' : 46,  # Literal de string
+            'IDENT' : 47,  # Identificadores (ex.: nomes de variáveis)
+            'NUM' : 48   # Adicionado token para números
         }
         self.index = -1
         self.lista = lista
@@ -334,26 +335,35 @@ class AnalisadorSintatico:
         # Verifica se o próximo token é válido para iniciar uma expressão
         if prox_token in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
             condicao = self.expr()  # Processa a expressão condicional
+            
+            # Agora, deve-se esperar e consumir um operador relacional como '=', '>', '<', etc.
+            operador_relacional = self.lookahead()
+            if operador_relacional in [self.tokensnome['=='], self.tokensnome['<>'], self.tokensnome['>'], self.tokensnome['<'], self.tokensnome['<='], self.tokensnome['>='], self.tokensnome['=']]:
+                self.consome(operador_relacional)  # Consome o operador relacional
+                comparado = self.expr()  # Consome a expressão à direita do operador
+
+            # Depois que a condição completa for processada, continue verificando o 'then'
+            self.consome(self.tokensnome['then'])  # Consome o token 'then'
+            
+            # Processa o restante da instrução if
+            label_else = self.gera_label()
+            label_end = self.gera_label()
+
+            self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
+            self.stmt()  # Processa o corpo do 'if'
+            
+            self.lista_interpretador.append(('JUMP', label_end, None, None))
+            self.lista_interpretador.append(('label', label_else, None, None))
+            
+            if self.lookahead()[0] == self.tokensnome['else']:
+                self.consome(self.tokensnome['else'])
+                self.stmt()
+
+            self.lista_interpretador.append(('label', label_end, None, None))
+            print("Finalizando processamento de ifStmt")
         else:
             raise Exception(f"Erro de fluxo: Token inesperado após 'if': {prox_token}")
 
-        # Processa o restante da instrução if
-        label_else = self.gera_label()
-        label_end = self.gera_label()
-
-        self.lista_interpretador.append(('JUMP_IF_FALSE', label_else, condicao, None))
-        self.consome(self.tokensnome['then'])  # Consome o token 'then'
-        self.stmt()  # Processa o corpo do 'if'
-        
-        self.lista_interpretador.append(('JUMP', label_end, None, None))
-        self.lista_interpretador.append(('label', label_else, None, None))
-        
-        if self.lookahead()[0] == self.tokensnome['else']:
-            self.consome(self.tokensnome['else'])
-            self.stmt()
-
-        self.lista_interpretador.append(('label', label_end, None, None))
-        print("Finalizando processamento de ifStmt")
 
 
 
@@ -372,11 +382,17 @@ class AnalisadorSintatico:
         token = self.lookahead()
         print(f"Token atual em expr: {token}")
 
-        # Verifica se o token é uma tupla e se o primeiro elemento é um IDENT ou NUM
-        if isinstance(token, tuple) and token[0] in [self.tokensnome['IDENT'], self.tokensnome.get('NUM', None)]:
-            # Processa a expressão com o identificador ou número
-            self.consome(token[0])  # Consome o token atual
-            return token
+        # Verifica se o token é um identificador ou número e consome adequadamente
+        if token == self.tokensnome['IDENT']:
+            # Consome o identificador
+            self.consome(self.tokensnome['IDENT'])
+            return self.lista[self.index][1]  # Retorna o identificador
+
+        elif token == self.tokensnome.get('NUM', None):
+            # Consome um número
+            self.consome(self.tokensnome['NUM'])
+            return self.lista[self.index][1]  # Retorna o número
+
         else:
             raise Exception(f"Token inesperado em expr: {token}")
 
